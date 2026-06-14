@@ -189,6 +189,7 @@
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
     <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span></div>
+    <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
         <div>
@@ -569,19 +570,27 @@
       <div class="note" id="dataMsg">Data lives on this device. Export a JSON file as your backup — or to move everything to another phone (export there, import here). Do this now and then occasionally.</div>
     </div>
 
+    <div class="sec-label">Profiles</div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Who's using the app</div></div>
+      <div id="profileList"></div>
+      <div class="qbtns" style="margin-top:10px"><button class="qbtn" style="background:var(--teal-dim);border-color:var(--teal)" onclick="addProfile()">+ Add profile</button></div>
+      <div class="note">Each profile keeps its own logs and its own cloud vault. Switch between them from the pills at the top of the Today screen. To use the same profile on a second device, create it there with the <b>same vault</b> (shown above).</div>
+    </div>
+
     <div class="sec-label">Cloud sync · Supabase</div>
     <div class="card">
       <div class="card-head"><div class="card-title">Cross-device sync</div><div class="card-val" id="cloudStatus">off</div></div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <input class="inline-input" style="width:100%;text-align:left" id="cloudUrl" placeholder="Project URL — https://xxxx.supabase.co">
         <input class="inline-input" style="width:100%;text-align:left" id="cloudKey" placeholder="anon public key">
-        <input class="inline-input" style="width:100%;text-align:left" id="cloudVault" placeholder="vault (leave blank to auto-generate)">
       </div>
       <div class="qbtns" style="margin-top:8px">
         <button class="qbtn" style="background:var(--teal-dim);border-color:var(--teal)" onclick="cloudConnect()">Connect &amp; sync</button>
         <button class="qbtn reset" onclick="cloudDisconnect()">disconnect</button>
       </div>
-      <div class="note" id="cloudNote">Enter your Supabase details once per device (saved on this device only, never in the repo). Use the <b>same vault</b> on every device to share data. Health data over an open table — fine for personal use, not high-security.</div>
+      <div class="note" id="cloudNote">URL + anon key are shared by all profiles (same Supabase project). Each profile syncs to its own vault automatically. Enter once per device — saved on this device only, never in the repo.</div>
+      <div class="note" id="cloudVaultNote" style="margin-top:6px"></div>
     </div>
   </section>
 
@@ -616,7 +625,7 @@
 </div></nav>
 
 <script>
-/* ---------- storage: window.storage (Claude app) / localStorage (self-hosted), with optional Supabase sync ---------- */
+/* ---------- storage: window.storage (Claude app) / localStorage (self-hosted) ---------- */
 const _isApp=(typeof window!=='undefined'&&window.storage&&window.storage.get);
 const _db=_isApp?window.storage:(()=>{
   const P='reset87:';
@@ -627,18 +636,50 @@ const _db=_isApp?window.storage:(()=>{
   };
 })();
 
-/* sync metadata (last-write timestamps per key) */
-function _metaGet(){try{return JSON.parse(localStorage.getItem('reset87:_meta')||'{}');}catch(e){return {};}}
-function _metaSet(m){try{localStorage.setItem('reset87:_meta',JSON.stringify(m));}catch(e){}}
+/* ---------- profiles: each person has their own data namespace + cloud vault ---------- */
+function _ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function _lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function _lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+function getProfiles(){try{return JSON.parse(_ls('reset87:_profiles')||'[]');}catch(e){return [];}}
+function saveProfiles(a){_lsSet('reset87:_profiles',JSON.stringify(a));}
+function activeId(){return _ls('reset87:_active')||'';}
+function setActiveId(id){_lsSet('reset87:_active',id);}
+function activeProfile(){const ps=getProfiles();return ps.find(p=>p.id===activeId())||ps[0]||null;}
+function newVault(){return 'r87-'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);}
+function sbCreds(){try{return JSON.parse(_ls('reset87:_sbcreds')||'null');}catch(e){return null;}}
+function saveSbCreds(c){_lsSet('reset87:_sbcreds',JSON.stringify(c));}
+function pfx(){return _isApp?'':'p:'+(activeId()||'default')+':';}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-/* cloud config — entered in Settings, stored on-device only (never in the repo) */
-function cloudCfg(){try{return JSON.parse(localStorage.getItem('reset87:_cloud')||'null');}catch(e){return null;}}
-let sb=null;
-function cloudInit(){
-  const c=cloudCfg();
-  if(!_isApp && c && c.url && c.key && window.supabase){try{sb=window.supabase.createClient(c.url,c.key);return true;}catch(e){sb=null;}}
-  sb=null;return false;
+/* one-time: adopt any existing single-user data as the first profile */
+function ensureProfiles(){
+  if(_isApp)return;
+  let ps=getProfiles();
+  if(ps.length){if(!activeProfile()&&ps[0])setActiveId(ps[0].id);return;}
+  let legacy=null;try{legacy=JSON.parse(_ls('reset87:_cloud')||'null');}catch(e){}
+  const id='p1';const vault=(legacy&&legacy.vault)||newVault();
+  ps=[{id:id,name:'Pravin',vault:vault}];saveProfiles(ps);setActiveId(id);
+  if(legacy&&legacy.url&&legacy.key)saveSbCreds({url:legacy.url,key:legacy.key});
+  try{
+    const moves=[];
+    for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);
+      if(kk&&kk.indexOf('reset87:')===0){const rest=kk.slice(8);
+        if(rest.indexOf('p:')===0)continue;
+        if(rest==='settings'||rest==='_meta'||rest.indexOf('day:')===0)moves.push([kk,rest]);}}
+    moves.forEach(([full,rest])=>{const v=localStorage.getItem(full);if(v!=null)_lsSet('reset87:p:'+id+':'+rest,v);localStorage.removeItem(full);});
+  }catch(e){}
+  _lsDel('reset87:_cloud');
 }
+
+/* sync metadata (last-write timestamps), per active profile */
+function _metaKey(){return 'reset87:'+pfx()+'_meta';}
+function _metaGet(){try{return JSON.parse(_ls(_metaKey())||'{}');}catch(e){return {};}}
+function _metaSet(m){_lsSet(_metaKey(),JSON.stringify(m));}
+
+/* cloud config — shared URL/key (one Supabase project), vault per active profile */
+function cloudCfg(){const c=sbCreds(),p=activeProfile();if(_isApp||!c||!c.url||!c.key||!p)return null;return {url:c.url,key:c.key,vault:p.vault};}
+let sb=null;
+function cloudInit(){const c=cloudCfg();if(c&&window.supabase){try{sb=window.supabase.createClient(c.url,c.key);return true;}catch(e){sb=null;}}sb=null;return false;}
 async function cloudPush(k,valueObj,ts){
   if(!sb)return;const c=cloudCfg();if(!c)return;
   try{await sb.from('reset87_kv').upsert({vault:c.vault,k:k,value:valueObj,updated_at:new Date(ts).toISOString()},{onConflict:'vault,k'});}catch(e){}
@@ -650,21 +691,21 @@ async function cloudSync(){
     if(error)return false;
     const m=_metaGet();const remote={};
     for(const row of (data||[])){const rt=new Date(row.updated_at).getTime();remote[row.k]=rt;
-      if(rt>(m[row.k]||0)){await _db.set(row.k,JSON.stringify(row.value));m[row.k]=rt;changed=true;}}
-    const keys=await _db.list('');
-    for(const k of keys){if(k==='_meta'||k==='_cloud')continue;const lt=m[k]||0;
-      if(lt>(remote[k]||0)){const r=await _db.get(k);if(r){await cloudPush(k,JSON.parse(r.value),lt);}}}
+      if(rt>(m[row.k]||0)){await _db.set(pfx()+row.k,JSON.stringify(row.value));m[row.k]=rt;changed=true;}}
+    const keys=await _db.list(pfx());const cut=pfx().length;
+    for(const fk of keys){const k=fk.slice(cut);if(k==='_meta')continue;const lt=m[k]||0;
+      if(lt>(remote[k]||0)){const r=await _db.get(fk);if(r){await cloudPush(k,JSON.parse(r.value),lt);}}}
     _metaSet(m);return changed;
   }catch(e){return false;}
 }
-async function sget(k){try{const r=await _db.get(k);return r?JSON.parse(r.value):null;}catch(e){return null;}}
+async function sget(k){try{const r=await _db.get(pfx()+k);return r?JSON.parse(r.value):null;}catch(e){return null;}}
 async function sset(k,v){
   const s=JSON.stringify(v);
-  try{await _db.set(k,s);}catch(e){}
+  try{await _db.set(pfx()+k,s);}catch(e){}
   try{const m=_metaGet();m[k]=Date.now();_metaSet(m);cloudPush(k,v,m[k]);}catch(e){}
   return true;
 }
-async function slist(p){try{const r=await _db.list(p);return r&&r.keys?r.keys:[];}catch(e){return [];}}
+async function slist(p){try{const full=pfx()+(p||'');const r=await _db.list(full);const cut=pfx().length;return r&&r.keys?r.keys.map(x=>x.slice(cut)):[];}catch(e){return [];}}
 
 /* ---------- day boundary: configurable. 0 = midnight (matches Amazfit Helio), 10 = shift-aligned ---------- */
 let ROLLOVER=0;
@@ -1275,46 +1316,103 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ---------- profiles UI ---------- */
+function renderProfiles(){
+  const bar=document.getElementById('profileBar');if(!bar)return;
+  const ps=getProfiles();
+  if(_isApp||ps.length===0){bar.style.display='none';bar.innerHTML='';return;}
+  bar.style.display='flex';
+  bar.innerHTML=ps.map(p=>'<button class="chip'+(p.id===activeId()?' on':'')+'" onclick="switchProfile(\''+p.id+'\')">'+esc(p.name)+'</button>').join('')
+    +'<button class="chip" onclick="addProfile()">+</button>';
+}
+function renderProfileList(){
+  const el=document.getElementById('profileList');if(!el)return;
+  const ps=getProfiles();
+  if(_isApp){el.innerHTML='<div class="note">Profiles work on the hosted site. Open your GitHub Pages URL to use them.</div>';return;}
+  el.innerHTML=ps.map(p=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">'
+    +'<div style="min-width:0"><b>'+esc(p.name)+'</b>'+(p.id===activeId()?' <span style="color:var(--teal)">· active</span>':'')
+    +'<div class="note" style="margin:3px 0 0;word-break:break-all">vault '+esc(p.vault)+'</div></div>'
+    +'<div class="chips" style="flex-wrap:nowrap"><button class="chip" onclick="renameProfile(\''+p.id+'\')">rename</button>'
+    +'<button class="chip" onclick="editVault(\''+p.id+'\')">vault</button>'
+    +'<button class="chip" onclick="deleteProfile(\''+p.id+'\')">delete</button></div></div>').join('');
+}
+async function switchProfile(id){
+  setActiveId(id);
+  cloudInit();
+  await loadSettings();await load();
+  renderProfiles();renderProfileList();refreshOpenViews();updateCloudUI();
+  if(sb){const ch=await cloudSync();if(ch){await loadSettings();await load();refreshOpenViews();}updateCloudUI('synced ✓');}
+}
+function addProfile(){
+  const name=(prompt("Name for the new profile (e.g. your wife's name):")||'').trim();if(!name)return;
+  const vault=(prompt('Vault — leave blank to create a new one, or paste an existing vault to sync this profile with another device:')||'').trim()||newVault();
+  const ps=getProfiles();const id='p'+Date.now().toString(36);
+  ps.push({id:id,name:name,vault:vault});saveProfiles(ps);
+  switchProfile(id);
+}
+function renameProfile(id){
+  const ps=getProfiles();const p=ps.find(x=>x.id===id);if(!p)return;
+  const name=(prompt('Rename profile:',p.name)||'').trim();if(!name)return;
+  p.name=name;saveProfiles(ps);renderProfiles();renderProfileList();
+}
+function editVault(id){
+  const ps=getProfiles();const p=ps.find(x=>x.id===id);if(!p)return;
+  const v=(prompt('Vault for "'+p.name+'". Paste the same vault from your other device to sync them:',p.vault)||'').trim();if(!v)return;
+  p.vault=v;saveProfiles(ps);renderProfileList();
+  if(id===activeId())switchProfile(id);
+}
+function deleteProfile(id){
+  let ps=getProfiles();
+  if(ps.length<=1){alert('Keep at least one profile.');return;}
+  const p=ps.find(x=>x.id===id);if(!p)return;
+  if(!confirm('Delete profile "'+p.name+'"? Its data on this device is removed. The cloud copy stays in its vault and can be restored by re-adding the profile with the same vault.'))return;
+  try{const pre='reset87:p:'+id+':';const del=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(kk&&kk.indexOf(pre)===0)del.push(kk);}del.forEach(k=>localStorage.removeItem(k));}catch(e){}
+  ps=ps.filter(x=>x.id!==id);saveProfiles(ps);
+  if(activeId()===id&&ps[0])setActiveId(ps[0].id);
+  switchProfile(activeId());
+}
+
 /* ---------- cloud sync controls ---------- */
 function refreshOpenViews(){
   if(!document.getElementById('view-trend').classList.contains('hidden'))renderTrend();
   if(!document.getElementById('view-insights').classList.contains('hidden'))renderInsights();
 }
 function updateCloudUI(status){
-  const c=cloudCfg();
-  const u=document.getElementById('cloudUrl'),k=document.getElementById('cloudKey'),v=document.getElementById('cloudVault');
-  if(u&&c){u.value=c.url||'';k.value=c.key||'';v.value=c.vault||'';}
+  const c=sbCreds();
+  const u=document.getElementById('cloudUrl'),k=document.getElementById('cloudKey');
+  if(u&&c){if(document.activeElement!==u)u.value=c.url||'';if(document.activeElement!==k)k.value=c.key||'';}
   const st=document.getElementById('cloudStatus');if(st)st.textContent=status||(sb?'on':'off');
+  const vn=document.getElementById('cloudVaultNote');const p=activeProfile();
+  if(vn)vn.innerHTML=p?('Active profile <b>'+esc(p.name)+'</b> syncs to vault <b style="word-break:break-all">'+esc(p.vault)+'</b>'):'';
 }
 async function cloudConnect(){
   if(_isApp){document.getElementById('cloudNote').textContent='Sync runs on the hosted site, not the in-Claude preview. Open your GitHub Pages URL to connect.';return;}
   const url=document.getElementById('cloudUrl').value.trim();
   const key=document.getElementById('cloudKey').value.trim();
-  let vault=document.getElementById('cloudVault').value.trim();
   if(!url||!key){document.getElementById('cloudNote').textContent='Enter both the Project URL and the anon public key.';return;}
-  if(!vault){vault='r87-'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);}
-  try{localStorage.setItem('reset87:_cloud',JSON.stringify({url,key,vault}));}catch(e){}
+  saveSbCreds({url,key});
   if(cloudInit()){
     updateCloudUI('syncing…');
     const ch=await cloudSync();
     if(ch){await loadSettings();await load();}
     refreshOpenViews();updateCloudUI('synced ✓');
-    document.getElementById('cloudNote').innerHTML='Connected. On your other devices, enter the same details and this exact vault:<br><b>'+vault+'</b>';
+    document.getElementById('cloudNote').textContent='Connected. Each profile syncs to its own vault — see the Profiles card above.';
   }else{
     updateCloudUI('off');
     document.getElementById('cloudNote').textContent='Could not connect — check the URL and anon key (and that the Supabase library loaded).';
   }
 }
 function cloudDisconnect(){
-  try{localStorage.removeItem('reset87:_cloud');}catch(e){}
-  sb=null;updateCloudUI('off');
-  document.getElementById('cloudNote').textContent='Disconnected. Data stays on this device. Reconnect any time with the same vault to resync.';
+  _lsDel('reset87:_sbcreds');sb=null;updateCloudUI('off');
+  document.getElementById('cloudNote').textContent='Disconnected. Data stays on this device. Reconnect to resync.';
 }
 function show(v){['today','trend','insights','plan'].forEach(x=>document.getElementById('view-'+x).classList.toggle('hidden',x!==v));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
   if(v==='trend')renderTrend();if(v==='insights')renderInsights();window.scrollTo(0,0);}
 
 (async()=>{
+  ensureProfiles();
+  renderProfiles();renderProfileList();
   await loadSettings();await load();
   cloudInit();updateCloudUI();
   if(sb){const ch=await cloudSync();if(ch){await loadSettings();await load();}refreshOpenViews();updateCloudUI('synced ✓');}

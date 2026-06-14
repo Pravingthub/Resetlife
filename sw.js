@@ -1,5 +1,5 @@
 /* Reset 87 — service worker. Bump CACHE on each release to refresh the shell. */
-const CACHE = 'reset87-v2';
+const CACHE = 'reset87-v3';
 const ASSETS = [
   './',
   './index.html',
