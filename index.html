@@ -81,6 +81,8 @@
   .sec-group{display:none}
   .sec-group.open{display:block;animation:accIn .18s ease}
   @keyframes accIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .ferr{color:var(--red);font-family:var(--body);font-size:12.5px;line-height:1.35;margin:8px 0 0;display:none}
+  .ferr.on{display:block}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:11px;box-shadow:var(--shadow)}
   .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
@@ -197,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b9</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b10</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -229,6 +231,7 @@
         <button class="qbtn" onclick="saveSleep()">Log hrs</button>
         <span class="note" style="margin:0;flex:1">Log it the moment you wake. Day-sleep counts — blackout, cool, silent.</span>
       </div>
+      <div class="ferr" id="errSleep"></div>
     </div>
 
     <div class="card">
@@ -239,6 +242,7 @@
         <button class="qbtn" onclick="saveRHR()">Log bpm</button>
         <span class="note" style="margin:0;flex:1">On waking. Drifts down as sleep and alcohol recovery improve.</span>
       </div>
+      <div class="ferr" id="errRhr"></div>
     </div>
 
     <div class="card">
@@ -249,6 +253,7 @@
         <button class="qbtn" onclick="saveWeight()">Log kg</button>
         <span class="note" style="margin:0;flex:1">Same time, after waking. The weekly average is the truth.</span>
       </div>
+      <div class="ferr" id="errWeight"></div>
     </div>
 
     <div class="card">
@@ -259,6 +264,7 @@
         <button class="qbtn" onclick="saveWaist()">Log cm</button>
         <span class="note" style="margin:0;flex:1">At the navel, relaxed, morning. Visceral fat goes first — this shrinks before the scale.</span>
       </div>
+      <div class="ferr" id="errWaist"></div>
     </div>
 
     <div class="card">
@@ -270,6 +276,7 @@
         <input class="inline-input sm" id="bpDia" type="number" inputmode="numeric" placeholder="dia">
         <button class="qbtn" onclick="saveBP()">Log</button>
       </div>
+      <div class="ferr" id="errBp"></div>
       <div class="note">Alcohol is a leading reversible cause — expect this to fall as you cut back.</div>
     </div>
 
@@ -333,7 +340,7 @@
       <div class="card-head"><div class="card-title"><span class="dot" style="background:var(--green)"></span>Supplements</div>
         <div class="card-val"><b id="suppVal">0</b> / 4</div></div>
       <div class="tiles" id="suppTiles"></div>
-      <div class="note">Each shows its own time. B-complex + omega-3 with your first meal, psyllium ~8 PM kept apart from other pills, magnesium right before sleep. Supplements, not prescriptions — run them past a pharmacist.</div>
+      <div class="note">Each shows its own time. B-complex + omega-3 with your first meal, psyllium ~8 PM kept apart from other pills, magnesium right before sleep. Always take psyllium with a large (300 ml+) glass of water, and don't take it within ~2 h of other pills. Supplements, not prescriptions — run them past a pharmacist.</div>
     </div>
 
     <div class="card">
@@ -461,7 +468,7 @@
     <div class="card">
       <div class="rule"><b>B-complex with thiamine (B1)</b> — standard for heavy drinkers; alcohol depletes it.</div>
       <div class="rule"><b>Magnesium</b> (glycinate, at night) — sleep, blood pressure, insulin sensitivity.</div>
-      <div class="rule"><b>Psyllium husk</b> 5–10g/day — cheap, proven LDL and blood-sugar help.</div>
+      <div class="rule"><b>Psyllium husk</b> 5–10g/day — cheap, proven LDL and blood-sugar help. Always take it with a large (300 ml+) glass of water, and don't take it within ~2 h of other pills.</div>
       <div class="rule"><b>Omega-3 / fish oil</b> — modest liver and triglyceride benefit.</div>
       <div class="rule red">Avoid "fat burners" and high-dose green-tea-extract — liver-toxic.</div>
       <div class="note">Caution: paracetamol + alcohol is hard on the liver. Run the stack past a pharmacist.</div>
@@ -488,17 +495,19 @@
       <div class="meal"><div class="clk">×15</div><div class="m"><b>Glute bridges</b><span>Drive hips up, squeeze at the top. Glutes, hamstrings.</span></div></div>
       <div class="meal"><div class="clk">×8–10</div><div class="m"><b>Chair / wall dips</b><span>Lower to ~90° at the elbow, press up. Triceps, shoulders.</span></div></div>
       <div class="meal"><div class="clk">20–30s</div><div class="m"><b>Plank</b><span>Straight line head-to-heels, brace the core.</span></div></div>
+      <div class="note">Progress in this order every 1–2 weeks: +1–2 reps → +1 round → 3-sec lowering → add external load. Get resistance bands or adjustable dumbbells — bodyweight alone plateaus in ~4–6 weeks and you risk losing muscle in a deficit. Deload every 4–6 weeks (cut volume ~40% for one week).</div>
     </div>
 
     <div class="sec-label">Strength B — full circuit</div>
     <div class="card">
       <div class="note" style="margin:0 0 10px">Same format: 2–3 rounds, control every rep.</div>
       <div class="meal"><div class="clk">×8 / leg</div><div class="m"><b>Reverse lunges</b><span>Step back, drop back knee, push through front heel. Legs, balance.</span></div></div>
+      <div class="meal"><div class="clk">×10–12</div><div class="m"><b>Band or table rows</b><span>Inverted rows under a sturdy table, or resistance-band rows. Pull elbows back, squeeze shoulder blades. Back, biceps — balances all the pushing.</span></div></div>
       <div class="meal"><div class="clk">×12</div><div class="m"><b>Chair-assisted squats</b><span>Touch the chair each rep for depth. Legs, glutes.</span></div></div>
       <div class="meal"><div class="clk">×12</div><div class="m"><b>Superman back raises</b><span>Lift chest + legs, squeeze low back, lower slow. Posterior chain.</span></div></div>
       <div class="meal"><div class="clk">×20</div><div class="m"><b>Standing calf raises</b><span>Up onto toes, pause, lower under control. Calves.</span></div></div>
       <div class="meal"><div class="clk">×8 / side</div><div class="m"><b>Bird-dog</b><span>Opposite arm + leg, hips level and still. Core, stability.</span></div></div>
-      <div class="note">Progress every 1–2 weeks: +1–2 reps, an extra round, 3-sec lowering, or lower push-up hands.</div>
+      <div class="note">Progress in this order every 1–2 weeks: +1–2 reps → +1 round → 3-sec lowering → add external load. Get resistance bands or adjustable dumbbells — bodyweight alone plateaus in ~4–6 weeks and you risk losing muscle in a deficit. Deload every 4–6 weeks (cut volume ~40% for one week).</div>
     </div>
 
     <div class="sec-label">Boxing</div>
@@ -521,7 +530,7 @@
     <div class="card">
       <div class="rule"><b>Treadmill incline 3–6 %, brisk walk — never run.</b></div>
       <div class="rule">Talk test: can talk, can't sing. Can sing → raise incline; can't talk → slow down.</div>
-      <div class="rule">Helio target ~110–128 bpm (≈60–70% of ~183 max). RPE 5–6. Boxing/TT sit higher at ~137–155.</div>
+      <div class="rule">Talk test is the real gauge: you can talk, can't sing. Helio guide ~110–135 bpm (%HRmax and Karvonen disagree by ~15 bpm, so trust the talk test). RPE 5–6. Boxing/TT sit higher at ~137–155.</div>
     </div>
 
     <div class="sec-label">Autoregulate to the night shift</div>
@@ -601,6 +610,7 @@
       </div>
       <div class="note" id="cloudNote">Enter the URL + anon key once per device. On the first phone, leave Sync code blank — it makes one. On the second phone, type that same Sync code, and every profile and all data appear automatically. Saved on-device only, never in the repo.</div>
       <div class="note" id="cloudSyncCode" style="margin-top:6px"></div>
+      <div class="note" style="margin-top:6px">Security note: your data is only as private as your Supabase Row-Level-Security. Enable RLS on the <b>reset87_kv</b> table with a policy scoping rows by <b>vault</b>/<b>account</b>. Without RLS, anyone with the anon key can read all rows and the Sync code alone is security-by-obscurity.</div>
     </div>
   </section>
 
@@ -764,12 +774,12 @@ const WORKOUTS={
   strengthA:{ch:'Strength A',title:'Strength A + Engine',est:'~45 min',steps:[
     ['6–8 min','Warm-up','Plate/march, joint circles, 10 squats + 10 bridges + 20 light punches'],
     ['2–3 rds','Circuit A','Incline push-ups 8–12 · Squats 12–15 · Glute bridges 15 · Chair dips 8–10 · Plank 20–30s'],
-    ['18–20 min','Treadmill Zone 2','Incline 3–6%, talk-not-sing, ~110–128 bpm'],
+    ['18–20 min','Treadmill Zone 2','Incline 3–6%, talk test (can talk, not sing), ~110–135 bpm'],
     ['5 min','Cool-down','Stretch + box-breathing 4-4-4-4 ×6']]},
   strengthB:{ch:'Strength B',title:'Strength B + Engine',est:'~45 min',steps:[
     ['6–8 min','Warm-up','Plate/march, joint circles, mobility'],
-    ['2–3 rds','Circuit B','Reverse lunges 8/leg · Chair squats 12 · Superman 12 · Calf raises 20 · Bird-dog 8/side'],
-    ['18–20 min','Treadmill Zone 2','Incline 3–6%, ~110–128 bpm'],
+    ['2–3 rds','Circuit B','Reverse lunges 8/leg · Rows 10–12 · Chair squats 12 · Superman 12 · Calf raises 20 · Bird-dog 8/side'],
+    ['18–20 min','Treadmill Zone 2','Incline 3–6%, talk test, ~110–135 bpm'],
     ['5 min','Cool-down','Stretch + box-breathing']]},
   boxing:{ch:'Boxing',title:'Boxing + Core',est:'~40 min',steps:[
     ['6–8 min','Warm-up','Shoulders, wrists, light footwork'],
@@ -784,12 +794,13 @@ const WORKOUTS={
     ['5 min','Cool-down','Stretch + breathing']]},
   tt:{ch:'Table Tennis',title:'Table Tennis + Boxing',est:'~50 min',steps:[
     ['6–8 min','Warm-up','Light movement, footwork'],
+    ['10–15 min','Optional strength finisher','Before TT if fresh: goblet squat 2×12 · push-up 2×10 · band row 2×12 — keeps a 3rd strength stimulus in the week'],
     ['40–45 min','Table tennis','Keep rallies going — real cardio and the fun that keeps you consistent'],
     ['2–3 rds','Boxing finisher','Optional, if you have gas left'],
     ['5 min','Cool-down','Stretch']]},
   zone2:{ch:'Zone 2',title:'Long Zone 2',est:'40–50 min',steps:[
     ['5 min','Warm-up','Easy build'],
-    ['40–50 min','Incline walk','Steady, talk-not-sing, ~110–128 bpm'],
+    ['40–50 min','Incline walk','Steady, talk test, ~110–135 bpm'],
     ['5 min','Cool-down','Plate + stretch']]},
   rest:{ch:'Rest',title:'Rest day',est:'—',steps:[
     ['—','Rest','Full rest, or a slow walk + 10 min Pilates mobility if restless'],
@@ -1013,7 +1024,7 @@ function renderFoodLog(){const el=document.getElementById('foodLog');if(!el)retu
 function estimateFood(){
   const txt=document.getElementById('foodInput').value.trim();if(!txt)return;
   const hint=document.getElementById('foodHint');
-  const phrases=txt.toLowerCase().split(/\s*[+,/]\s*|\s+and\s+|\s+with\s+/).map(s=>s.trim()).filter(Boolean);
+  const phrases=txt.toLowerCase().split(/\s*[+,/]\s*|\s+and\s+/).map(s=>s.trim()).filter(Boolean);
   const items=[],unmatched=[];
   phrases.forEach(ph=>{
     let best=null,bestLen=0;
@@ -1063,11 +1074,16 @@ function setTrain(t){today.training=(today.training===t)?'':t;if(t==='rest')toda
 function setMins(v){today.trainMins=Math.max(0,parseInt(v)||0);save();}
 function setCrave(c){today.craving=(today.craving===c)?'':c;renderToday();save();}
 function setNote(v){today.cravNote=v;save(false);}
-function saveWeight(){const v=parseFloat(document.getElementById('weightInput').value);if(isNaN(v)||v<30||v>250)return;today.weight=Math.round(v*10)/10;save();renderHero();}
-function saveWaist(){const v=parseFloat(document.getElementById('waistInput').value);if(isNaN(v)||v<40||v>200)return;today.waist=Math.round(v*10)/10;save();renderHero();}
-function saveBP(){const s=parseInt(document.getElementById('bpSys').value),d=parseInt(document.getElementById('bpDia').value);if(isNaN(s)||isNaN(d))return;today.bpSys=s;today.bpDia=d;renderToday();save();}
-function saveRHR(){const v=parseInt(document.getElementById('rhrInput').value);if(isNaN(v)||v<30||v>200)return;today.rhr=v;save();}
-function saveSleep(){const v=parseFloat(document.getElementById('sleepInput').value);if(isNaN(v)||v<0||v>16)return;today.sleep=Math.round(v*10)/10;save();}
+function fieldErr(id,msg){const e=document.getElementById(id);if(!e)return;if(msg){e.textContent=msg;e.classList.add('on');}else{e.textContent='';e.classList.remove('on');}}
+function saveWeight(){const raw=document.getElementById('weightInput').value.trim();const v=parseFloat(raw);if(raw===''||isNaN(v)||v<30||v>250){fieldErr('errWeight','Enter a weight between 30 and 250 kg.');return;}fieldErr('errWeight','');today.weight=Math.round(v*10)/10;save();renderHero();}
+function saveWaist(){const raw=document.getElementById('waistInput').value.trim();const v=parseFloat(raw);if(raw===''||isNaN(v)||v<40||v>200){fieldErr('errWaist','Enter a waist between 40 and 200 cm.');return;}fieldErr('errWaist','');today.waist=Math.round(v*10)/10;save();renderHero();}
+function saveBP(){const rs=document.getElementById('bpSys').value.trim(),rd=document.getElementById('bpDia').value.trim();const s=parseInt(rs,10),d=parseInt(rd,10);
+  if(rs===''||rd===''||isNaN(s)||isNaN(d)){fieldErr('errBp','Enter both systolic and diastolic.');return;}
+  if(s<70||s>260||d<40||d>160){fieldErr('errBp','Out of range — systolic 70–260, diastolic 40–160.');return;}
+  if(d>=s){fieldErr('errBp','Systolic should be higher than diastolic.');return;}
+  fieldErr('errBp','');today.bpSys=s;today.bpDia=d;renderToday();save();}
+function saveRHR(){const raw=document.getElementById('rhrInput').value.trim();const v=parseInt(raw,10);if(raw===''||isNaN(v)||v<30||v>200){fieldErr('errRhr','Enter a resting HR between 30 and 200 bpm.');return;}fieldErr('errRhr','');today.rhr=v;save();renderHero();}
+function saveSleep(){const raw=document.getElementById('sleepInput').value.trim();const v=parseFloat(raw);if(raw===''||isNaN(v)||v<0||v>16){fieldErr('errSleep','Enter sleep between 0 and 16 hours.');return;}fieldErr('errSleep','');today.sleep=Math.round(v*10)/10;save();}
 
 /* ---------- hero ---------- */
 async function renderHero(){
@@ -1228,7 +1244,7 @@ function buildPlan(){
     ['Tue','Boxing + Core','Warm-up → 5–6 boxing rounds → Pilates core → easy treadmill → cool-down'],
     ['Wed','Recovery: Pilates + Walk','Full mat flow → 30 min Zone 2 walk. Deliberately easy'],
     ['Thu','Strength B + Engine','Warm-up → Circuit B → treadmill Zone 2 18–20 min → cool-down'],
-    ['Fri','Table Tennis + Boxing','Warm-up → table tennis 40–45 min → optional 2–3 boxing rounds'],
+    ['Fri','Table Tennis + Boxing','Warm-up → optional strength finisher (if fresh) → table tennis 40–45 min → optional 2–3 boxing rounds'],
     ['Sat','Long Zone 2','Warm-up → 40–50 min easy incline walk → plate + stretch'],
     ['Sun','Rest','Full rest, or a slow walk + 10 min Pilates mobility']];
   document.getElementById('planTrain').innerHTML=sched.map(r=>`<div class="plan-day"><div class="d">${r[0]}</div><div class="t"><b>${r[1]}</b><span>${r[2]}</span></div></div>`).join('')
@@ -1616,6 +1632,9 @@ function updateCloudUI(status){
   if(sc)sc.innerHTML=(c&&c.account)?('Your <b>Sync code</b>: <b style="word-break:break-all">'+esc(c.account)+'</b><br>Enter this same code (plus the URL & key) on any other phone, and both profiles + all data appear automatically.'):'';
 }
 async function cloudConnect(){
+  /* SECURITY: data isolation depends on Supabase Row-Level Security on reset87_kv,
+     with a policy scoping rows by vault/account. Without RLS the anon key can read all
+     rows and the Sync code is only security-by-obscurity. Do not weaken this. */
   if(_isApp){document.getElementById('cloudNote').textContent='Sync runs on the hosted site, not the in-Claude preview. Open your GitHub Pages URL to connect.';return;}
   const url=document.getElementById('cloudUrl').value.trim();
   const key=document.getElementById('cloudKey').value.trim();
