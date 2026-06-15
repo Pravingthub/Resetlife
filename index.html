@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b14</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b15</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -1504,8 +1504,17 @@ function renderMealToday(){
   const el=document.getElementById('mealCoach');if(!el)return;
   const i=mealDayIdx(),m=MEALPLAN[i];
   let name='';try{const p=activeProfile();if(p&&p.name)name=p.name.split(' ')[0];}catch(e){}
+  const chips=`<div class="qbtns" style="margin:0 0 12px;gap:8px">`
+    +`<button class="chip${MEALMODE==='shift'?' on':''}" onclick="setMealMode('shift')">Night shift · 2 meals</button>`
+    +`<button class="chip${MEALMODE==='standard'?' on':''}" onclick="setMealMode('standard')">Standard · 3 meals</button></div>`;
+  let rows;
+  if(MEALMODE==='shift'){
+    rows=mealRow('Lunch · ~1 PM (main)',m.l)+mealRow('Dinner · night',m.dn)+mealRow('Late snack · if hungry',m.sn);
+  }else{
+    rows=mealRow('Breakfast',m.b)+mealRow('Lunch · main',m.l)+mealRow('Dinner',m.dn)+mealRow('Snack',m.sn);
+  }
   el.innerHTML=`<div class="note" style="margin:0 0 10px;color:var(--text)">${name?'Hi '+name+' — ':''}here's ${WEEK_FULL[i]}'s fat-loss kitchen. Cook these; log your own portions.</div>`
-    +mealRow('Breakfast',m.b)+mealRow('Main meal',m.l)+mealRow('Dinner',m.dn)+mealRow('Snack',m.sn)
+    +chips+rows
     +`<div class="note">Veg swaps: chicken / fish / egg ↔ sprouts, paneer, dal, soya. Fill the plate with veg + protein first, keep rice to ~1 cup, skip fried items &amp; sugar. Tap 🔊 Talk to hear today's plan.</div>`;
 }
 function talkMeals(){
@@ -1513,9 +1522,13 @@ function talkMeals(){
   const i=mealDayIdx(),m=MEALPLAN[i];
   let name='';try{const p=activeProfile();if(p&&p.name)name=p.name.split(' ')[0];}catch(e){}
   const hr=new Date().getHours();const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
-  const txt=`${greet}${name?', '+name:''}. Here's today's kitchen for ${WEEK_FULL[i]}. `
-    +`For breakfast, make ${m.b.t}. The main meal is ${m.l.t}. `
-    +`For dinner, keep it light with ${m.dn.t}. If you snack, have ${m.sn.t}. `
+  let body;
+  if(MEALMODE==='shift'){
+    body=`Your main meal, around 1 PM, is ${m.l.t}. At night, keep it light with ${m.dn.t}. If you get hungry late, have ${m.sn.t}. `;
+  }else{
+    body=`For breakfast, make ${m.b.t}. The main meal is ${m.l.t}. For dinner, keep it light with ${m.dn.t}. If you snack, have ${m.sn.t}. `;
+  }
+  const txt=`${greet}${name?', '+name:''}. Here's today's kitchen for ${WEEK_FULL[i]}. `+body
     +`Remember: fill the plate with vegetables and protein first, keep rice to about one cup, and skip the fried food and sugar today. You've got this.`;
   try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.rate=0.98;speechSynthesis.speak(u);}catch(e){}
 }
@@ -1536,7 +1549,7 @@ function buildPlan(){
   document.getElementById('planMeals').innerHTML=meals.map(m=>`<div class="meal"><div class="clk">${m[0]}</div><div class="m"><b>${m[1]}</b><span>${m[2]}</span></div></div>`).join('')
     +`<div class="note">Stop eating ~2 hrs before sleep. A 10-min walk after each main meal.</div>`;
   const sim=document.getElementById('planSIMeals');
-  if(sim)sim.innerHTML=MEALPLAN.map((m,i)=>`<div class="plan-day"><div class="d">${WEEK_SHORT[i]}</div><div class="t"><b>${m.b.t} · ${m.l.t}</b><span>Dinner: ${m.dn.t} · Snack: ${m.sn.t}</span></div></div>`).join('')
+  if(sim)sim.innerHTML=MEALPLAN.map((m,i)=>`<div class="plan-day"><div class="d">${WEEK_SHORT[i]}</div><div class="t"><b>Lunch: ${m.l.t}</b><span>Dinner: ${m.dn.t} · Snack: ${m.sn.t}<br>If you eat breakfast: ${m.b.t}</span></div></div>`).join('')
     +`<div class="note">South Indian, protein-forward, ~1,500–1,700 kcal. Veg swaps: chicken / fish / egg ↔ sprouts, paneer, dal, soya. Minimal oil &amp; ghee, no sweets or sugary coffee, plenty of greens, sambar &amp; rasam for fibre, curd for protein. Night shift: breakfast = your wake meal, main = pre-shift, dinner = mid-shift, snack = only if hungry — stop eating ~2 h before sleep. Each profile logs its own portions; this is the household menu.</div>`;
 }
 
@@ -1810,11 +1823,15 @@ function downloadReport(){try{const blob=new Blob([_reportHTML],{type:'text/html
 
 /* ---------- day-boundary setting ---------- */
 let GOALS={weight:null,waist:null,dry:5};
+let MEALMODE='shift';                                          /* 'shift' = 2 meals (lunch+dinner), 'standard' = 3 meals */
 async function loadSettings(){
-  ROLLOVER=0;GOALS={weight:null,waist:null,dry:5};            /* reset first — never carry across profiles */
+  ROLLOVER=0;GOALS={weight:null,waist:null,dry:5};MEALMODE='shift';   /* reset first — never carry across profiles */
   const s=await sget('settings');
-  if(s){if(typeof s.rollover==='number')ROLLOVER=s.rollover;if(s.goals)GOALS=Object.assign({weight:null,waist:null,dry:5},s.goals);}
+  if(s){if(typeof s.rollover==='number')ROLLOVER=s.rollover;if(s.goals)GOALS=Object.assign({weight:null,waist:null,dry:5},s.goals);if(s.mealMode)MEALMODE=s.mealMode;}
   updateRolloverUI();
+}
+async function setMealMode(mode){
+  MEALMODE=mode;const s=(await sget('settings'))||{};s.mealMode=mode;s.rollover=ROLLOVER;s.goals=GOALS;await sset('settings',s);renderMealToday();
 }
 function updateRolloverUI(){document.querySelectorAll('#rolloverOpts .chip').forEach(c=>c.classList.toggle('on',+c.dataset.h===ROLLOVER));}
 async function setRollover(h){
