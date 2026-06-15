@@ -1,19 +1,12 @@
-/* Reset 87 — service worker. Bump CACHE on each release to refresh the shell. */
-const CACHE = 'reset87-v3';
+/* Reset 87 — service worker. Network-first for the page, cache-first for assets. */
+const CACHE = 'reset87-v9';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png',
-  './apple-touch-icon.png'
+  './','./index.html','./manifest.webmanifest',
+  './icon-192.png','./icon-512.png','./icon-maskable-512.png','./apple-touch-icon.png'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -26,17 +19,25 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const req = e.request;
+  const isDoc = req.mode === 'navigate' || req.destination === 'document';
+  if (isDoc) {
+    // network-first: always get the freshest page when online
+    e.respondWith(
+      fetch(req).then(resp => {
+        try { const copy = resp.clone(); caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{}); } catch(_){}
+        return resp;
+      }).catch(() => caches.match(req).then(c => c || caches.match('./index.html')))
+    );
+    return;
+  }
+  // assets: cache-first with background refresh
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const network = fetch(e.request).then(resp => {
-        // cache same-origin and cacheable cross-origin (e.g. fonts) responses
-        try {
-          const copy = resp.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
-        } catch (_) {}
+    caches.match(req).then(cached => {
+      const network = fetch(req).then(resp => {
+        try { const copy = resp.clone(); caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{}); } catch(_){}
         return resp;
       }).catch(() => cached);
-      // cache-first for instant load + offline; refresh in background
       return cached || network;
     })
   );

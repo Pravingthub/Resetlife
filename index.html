@@ -39,8 +39,8 @@
   header{padding:22px 0 6px}
   .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:600}
   .hero{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:6px}
-  .hero-num{font-family:var(--display);font-weight:700;font-size:56px;line-height:.9;letter-spacing:-.02em}
-  .hero-num .unit{font-size:19px;color:var(--muted);font-weight:500;margin-left:4px}
+  .hero-num{font-family:var(--display);font-weight:700;font-size:74px;line-height:.85;letter-spacing:-.03em}
+  .hero-num .unit{font-size:22px;color:var(--teal);font-weight:600;margin-left:5px}
   .hero-sub{font-size:12px;color:var(--muted);margin-top:6px}
   .delta{font-family:var(--display);font-size:13px;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap}
   .delta.down{color:var(--green);background:rgba(103,211,145,.12)}
@@ -53,7 +53,7 @@
   .htile{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
   .htile.span{grid-column:1 / -1}
   .htile .hl{font-size:10px;color:var(--faint);letter-spacing:.05em;text-transform:uppercase;font-weight:600}
-  .htile .hv{font-family:var(--display);font-weight:700;font-size:15px;margin-top:4px;line-height:1.1}
+  .htile .hv{font-family:var(--display);font-weight:700;font-size:17px;margin-top:4px;line-height:1.1}
   .htile .hv small{font-size:11px;color:var(--muted);font-weight:500}
   .htile.span .hv{font-size:16px}
   .htile .hv .dn{color:var(--green)} .htile .hv .up{color:var(--copper)}
@@ -67,11 +67,20 @@
   .tab{flex:1;padding:9px 0;border-radius:12px;font-size:12px;font-weight:600;color:var(--muted);
     display:flex;flex-direction:column;align-items:center;gap:4px;transition:.15s}
   .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
-  .tab.active{color:var(--teal);background:rgba(79,199,181,.1)}
+  .tab.active{color:var(--bg);background:var(--teal);font-weight:700}
 
-  .sec-label{font-family:var(--display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--faint);font-weight:600;margin:20px 2px 9px;display:flex;align-items:center;gap:8px}
+  .sec-label{font-family:var(--display);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--bar,var(--ink));font-weight:700;margin:24px 2px 11px;display:flex;align-items:center;gap:10px}
+  .sec-label::before{content:"";width:4px;height:15px;border-radius:2px;background:var(--bar,var(--teal));flex:0 0 auto}
   .sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  /* accordion (Plan tab) */
+  .sec-toggle{cursor:pointer;user-select:none}
+  .sec-toggle::after{display:none}
+  .sec-toggle .chev{margin-left:auto;color:inherit;opacity:.65;font-size:11px;transition:transform .2s;font-family:var(--body)}
+  .sec-toggle.open .chev{transform:rotate(180deg)}
+  .sec-group{display:none}
+  .sec-group.open{display:block;animation:accIn .18s ease}
+  @keyframes accIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:11px;box-shadow:var(--shadow)}
   .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
@@ -188,12 +197,12 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b9</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
         <div>
-          <div class="hero-num"><span id="heroWeight">87.0</span><span class="unit">kg</span></div>
+          <div class="hero-num"><span id="heroWeight">—</span><span class="unit">kg</span></div>
           <div class="hero-sub" id="heroSub">log your first weigh-in</div>
         </div>
         <div class="delta flat" id="heroDelta">—</div>
@@ -575,7 +584,7 @@
       <div class="card-head"><div class="card-title">Who's using the app</div></div>
       <div id="profileList"></div>
       <div class="qbtns" style="margin-top:10px"><button class="qbtn" style="background:var(--teal-dim);border-color:var(--teal)" onclick="addProfile()">+ Add profile</button></div>
-      <div class="note">Each profile keeps its own logs and its own cloud vault. Switch between them from the pills at the top of the Today screen. To use the same profile on a second device, create it there with the <b>same vault</b> (shown above).</div>
+      <div class="note">Each profile keeps its own logs. The profile list lives in the cloud — add one here and it appears on every device that uses the same Sync code. Switch between profiles from the pills at the top of Today.</div>
     </div>
 
     <div class="sec-label">Cloud sync · Supabase</div>
@@ -584,13 +593,14 @@
       <div style="display:flex;flex-direction:column;gap:8px">
         <input class="inline-input" style="width:100%;text-align:left" id="cloudUrl" placeholder="Project URL — https://xxxx.supabase.co">
         <input class="inline-input" style="width:100%;text-align:left" id="cloudKey" placeholder="anon public key">
+        <input class="inline-input" style="width:100%;text-align:left" id="cloudAccount" placeholder="Sync code — leave blank on the first phone">
       </div>
       <div class="qbtns" style="margin-top:8px">
         <button class="qbtn" style="background:var(--teal-dim);border-color:var(--teal)" onclick="cloudConnect()">Connect &amp; sync</button>
         <button class="qbtn reset" onclick="cloudDisconnect()">disconnect</button>
       </div>
-      <div class="note" id="cloudNote">URL + anon key are shared by all profiles (same Supabase project). Each profile syncs to its own vault automatically. Enter once per device — saved on this device only, never in the repo.</div>
-      <div class="note" id="cloudVaultNote" style="margin-top:6px"></div>
+      <div class="note" id="cloudNote">Enter the URL + anon key once per device. On the first phone, leave Sync code blank — it makes one. On the second phone, type that same Sync code, and every profile and all data appear automatically. Saved on-device only, never in the repo.</div>
+      <div class="note" id="cloudSyncCode" style="margin-top:6px"></div>
     </div>
   </section>
 
@@ -599,14 +609,26 @@
     <h2 class="view-title">Insights</h2>
     <p class="view-intro">Computed from what you've logged. Projections assume your current rate holds — estimates, not medical predictions. No bloodwork means no liver or cholesterol numbers here; those need labs.</p>
 
+    <div class="sec-label">Your goals</div>
+    <div class="card" id="goalsCard"></div>
+
     <div class="sec-label">Projection</div>
     <div class="card" id="projCard"></div>
+
+    <div class="sec-label">Your patterns &amp; streaks</div>
+    <div class="card" id="patternCard"></div>
+
+    <div class="sec-label">What links to what</div>
+    <div class="card" id="corrCard"></div>
 
     <div class="sec-label">This week's scorecard</div>
     <div class="card" id="scoreCard"></div>
 
     <div class="sec-label">What the data says</div>
     <div class="card" id="obsCard"></div>
+
+    <div class="sec-label">Reports</div>
+    <div class="card" id="reportCard"></div>
   </section>
 
 </div>
@@ -636,39 +658,42 @@ const _db=_isApp?window.storage:(()=>{
   };
 })();
 
-/* ---------- profiles: each person has their own data namespace + cloud vault ---------- */
+/* ---------- local helpers (localStorage is just a cache; the cloud is the source of truth) ---------- */
 function _ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function _lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function _lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
-function getProfiles(){try{return JSON.parse(_ls('reset87:_profiles')||'[]');}catch(e){return [];}}
-function saveProfiles(a){_lsSet('reset87:_profiles',JSON.stringify(a));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function newId(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function newVault(){return 'v'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);}
+function newAccount(){return 'acct-'+Math.random().toString(36).slice(2,8)+Math.random().toString(36).slice(2,8);}
+
+/* ---------- Supabase credentials: URL + anon key + a shared Sync code (the household id) ---------- */
+function sbCfg(){try{return JSON.parse(_ls('reset87:_sb')||'null');}catch(e){return null;}}
+function saveSbCfg(c){_lsSet('reset87:_sb',JSON.stringify(c));}
+let sb=null;
+function cloudInit(){const c=sbCfg();if(!_isApp&&c&&c.url&&c.key&&c.account&&window.supabase){try{sb=window.supabase.createClient(c.url,c.key);return true;}catch(e){sb=null;}}sb=null;return false;}
+
+/* ---------- profiles: the list lives in Supabase under the Sync code; cached locally ---------- */
+function getProfiles(){try{return JSON.parse(_ls('reset87:_registry')||'[]');}catch(e){return [];}}
+function saveProfilesLocal(a){_lsSet('reset87:_registry',JSON.stringify(a));}
 function activeId(){return _ls('reset87:_active')||'';}
 function setActiveId(id){_lsSet('reset87:_active',id);}
 function activeProfile(){const ps=getProfiles();return ps.find(p=>p.id===activeId())||ps[0]||null;}
-function newVault(){return 'r87-'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);}
-function sbCreds(){try{return JSON.parse(_ls('reset87:_sbcreds')||'null');}catch(e){return null;}}
-function saveSbCreds(c){_lsSet('reset87:_sbcreds',JSON.stringify(c));}
 function pfx(){return _isApp?'':'p:'+(activeId()||'default')+':';}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function dataVault(){const p=activeProfile();return p?p.vault:null;}
 
-/* one-time: adopt any existing single-user data as the first profile */
-function ensureProfiles(){
-  if(_isApp)return;
-  let ps=getProfiles();
-  if(ps.length){if(!activeProfile()&&ps[0])setActiveId(ps[0].id);return;}
-  let legacy=null;try{legacy=JSON.parse(_ls('reset87:_cloud')||'null');}catch(e){}
-  const id='p1';const vault=(legacy&&legacy.vault)||newVault();
-  ps=[{id:id,name:'Pravin',vault:vault}];saveProfiles(ps);setActiveId(id);
-  if(legacy&&legacy.url&&legacy.key)saveSbCreds({url:legacy.url,key:legacy.key});
+async function pullRegistry(){
+  if(!sb)return null;const c=sbCfg();
   try{
-    const moves=[];
-    for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);
-      if(kk&&kk.indexOf('reset87:')===0){const rest=kk.slice(8);
-        if(rest.indexOf('p:')===0)continue;
-        if(rest==='settings'||rest==='_meta'||rest.indexOf('day:')===0)moves.push([kk,rest]);}}
-    moves.forEach(([full,rest])=>{const v=localStorage.getItem(full);if(v!=null)_lsSet('reset87:p:'+id+':'+rest,v);localStorage.removeItem(full);});
-  }catch(e){}
-  _lsDel('reset87:_cloud');
+    const {data,error}=await sb.from('reset87_kv').select('value').eq('vault',c.account).eq('k','_registry').maybeSingle();
+    if(error)return null;
+    if(data&&data.value&&Array.isArray(data.value.profiles)){saveProfilesLocal(data.value.profiles);return data.value.profiles;}
+    return null;
+  }catch(e){return null;}
+}
+async function pushRegistry(){
+  if(!sb)return;const c=sbCfg();
+  try{await sb.from('reset87_kv').upsert({vault:c.account,k:'_registry',value:{profiles:getProfiles()},updated_at:new Date().toISOString()},{onConflict:'vault,k'});}catch(e){}
 }
 
 /* sync metadata (last-write timestamps), per active profile */
@@ -676,18 +701,14 @@ function _metaKey(){return 'reset87:'+pfx()+'_meta';}
 function _metaGet(){try{return JSON.parse(_ls(_metaKey())||'{}');}catch(e){return {};}}
 function _metaSet(m){_lsSet(_metaKey(),JSON.stringify(m));}
 
-/* cloud config — shared URL/key (one Supabase project), vault per active profile */
-function cloudCfg(){const c=sbCreds(),p=activeProfile();if(_isApp||!c||!c.url||!c.key||!p)return null;return {url:c.url,key:c.key,vault:p.vault};}
-let sb=null;
-function cloudInit(){const c=cloudCfg();if(c&&window.supabase){try{sb=window.supabase.createClient(c.url,c.key);return true;}catch(e){sb=null;}}sb=null;return false;}
 async function cloudPush(k,valueObj,ts){
-  if(!sb)return;const c=cloudCfg();if(!c)return;
-  try{await sb.from('reset87_kv').upsert({vault:c.vault,k:k,value:valueObj,updated_at:new Date(ts).toISOString()},{onConflict:'vault,k'});}catch(e){}
+  if(!sb)return;const v=dataVault();if(!v)return;
+  try{await sb.from('reset87_kv').upsert({vault:v,k:k,value:valueObj,updated_at:new Date(ts).toISOString()},{onConflict:'vault,k'});}catch(e){}
 }
 async function cloudSync(){
-  if(!sb)return false;const c=cloudCfg();if(!c)return false;let changed=false;
+  if(!sb)return false;const v=dataVault();if(!v)return false;let changed=false;
   try{
-    const {data,error}=await sb.from('reset87_kv').select('k,value,updated_at').eq('vault',c.vault);
+    const {data,error}=await sb.from('reset87_kv').select('k,value,updated_at').eq('vault',v);
     if(error)return false;
     const m=_metaGet();const remote={};
     for(const row of (data||[])){const rt=new Date(row.updated_at).getTime();remote[row.k]=rt;
@@ -706,6 +727,30 @@ async function sset(k,v){
   return true;
 }
 async function slist(p){try{const full=pfx()+(p||'');const r=await _db.list(full);const cut=pfx().length;return r&&r.keys?r.keys.map(x=>x.slice(cut)):[];}catch(e){return [];}}
+
+/* ---------- one-time migration from older builds (keeps existing data + creds) ---------- */
+function migrateLocal(){
+  if(_isApp||_ls('reset87:_registry'))return;
+  let oldProfiles=null;try{oldProfiles=JSON.parse(_ls('reset87:_profiles')||'null');}catch(e){}
+  let oldCreds=null;try{oldCreds=JSON.parse(_ls('reset87:_sbcreds')||'null');}catch(e){}
+  let legacy=null;try{legacy=JSON.parse(_ls('reset87:_cloud')||'null');}catch(e){}
+  if(oldProfiles&&oldProfiles.length){
+    saveProfilesLocal(oldProfiles);
+    if(!activeId())setActiveId(oldProfiles[0].id);
+    if(oldCreds&&oldCreds.url&&!sbCfg())saveSbCfg({url:oldCreds.url,key:oldCreds.key,account:newAccount()});
+    return;
+  }
+  /* original single-user build */
+  const id='p1';const vault=(legacy&&legacy.vault)||newVault();
+  saveProfilesLocal([{id:id,name:'Pravin',vault:vault}]);setActiveId(id);
+  if(legacy&&legacy.url&&!sbCfg())saveSbCfg({url:legacy.url,key:legacy.key,account:newAccount()});
+  try{const moves=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);
+      if(kk&&kk.indexOf('reset87:')===0){const rest=kk.slice(8);
+        if(rest.indexOf('p:')===0)continue;
+        if(rest==='settings'||rest==='_meta'||rest.indexOf('day:')===0)moves.push([kk,rest]);}}
+    moves.forEach(([full,rest])=>{const vv=localStorage.getItem(full);if(vv!=null)_lsSet('reset87:p:'+id+':'+rest,vv);localStorage.removeItem(full);});}catch(e){}
+  _lsDel('reset87:_cloud');
+}
 
 /* ---------- day boundary: configurable. 0 = midnight (matches Amazfit Helio), 10 = shift-aligned ---------- */
 let ROLLOVER=0;
@@ -1036,7 +1081,7 @@ async function renderHero(){
     const diff=last.weight-ref.weight;
     if(W.length<2){hd.className='delta flat';hd.textContent='baseline';}
     else{const s=diff<=-.05?'down':diff>=.05?'up':'flat';hd.className='delta '+s;hd.textContent=(diff>0?'+':'')+diff.toFixed(1)+' kg';}
-  }else{hw.textContent='87.0';hs.textContent='log your first weigh-in';hd.className='delta flat';hd.textContent='—';}
+  }else{hw.textContent='—';hs.textContent='log your first weigh-in';hd.className='delta flat';hd.textContent='—';}
   // waist tile
   const Wa=days.filter(d=>typeof d.waist==='number').sort((a,b)=>a.date<b.date?-1:1);
   const wp=document.getElementById('hgWaist');
@@ -1153,6 +1198,31 @@ function drawAlcStrip(days){
 }
 
 /* ---------- plan reference ---------- */
+function colorizeSections(){
+  const pal=['var(--teal)','var(--copper)','var(--green)','var(--blue)','var(--violet)'];
+  ['view-today','view-trend','view-insights','view-plan'].forEach(id=>{
+    const root=document.getElementById(id);if(!root)return;
+    const labels=root.querySelectorAll('.sec-label');
+    labels.forEach((l,i)=>l.style.setProperty('--bar',pal[i%pal.length]));
+  });
+}
+function makeAccordion(){
+  const root=document.getElementById('view-plan');
+  if(!root||root.dataset.acc)return;root.dataset.acc='1';
+  const labels=[].slice.call(root.querySelectorAll(':scope > .sec-label'));
+  labels.forEach(label=>{
+    const group=document.createElement('div');group.className='sec-group';
+    const sibs=[];let n=label.nextSibling;
+    while(n&&!(n.nodeType===1&&n.classList&&n.classList.contains('sec-label'))){sibs.push(n);n=n.nextSibling;}
+    label.after(group);
+    sibs.forEach(s=>group.appendChild(s));
+    label.classList.add('sec-toggle');
+    const chev=document.createElement('span');chev.className='chev';chev.textContent='▾';label.appendChild(chev);
+    label.addEventListener('click',()=>{label.classList.toggle('open');group.classList.toggle('open');});
+  });
+  const first=root.querySelector(':scope > .sec-toggle');
+  if(first&&first.nextElementSibling){first.classList.add('open');first.nextElementSibling.classList.add('open');}
+}
 function buildPlan(){
   const sched=[['Mon','Strength A + Engine','Warm-up → Circuit A → treadmill Zone 2 18–20 min → cool-down'],
     ['Tue','Boxing + Core','Warm-up → 5–6 boxing rounds → Pilates core → easy treadmill → cool-down'],
@@ -1201,6 +1271,9 @@ async function renderInsights(){
     const perWeek=slope*7;
     const losing=slope<-0.005;
     const proj4=latest+slope*28;
+    const lo=latest+slope*28*0.6, hi=latest+slope*28*1.4;
+    const recentW=W.filter(d=>dnum(d.date)>=dnum(W[W.length-1].date)-14);
+    let recentSlope=null;if(recentW.length>=2){const rb=dnum(recentW[0].date);recentSlope=lsq(recentW.map(d=>({x:dnum(d.date)-rb,y:d.weight})));}
     const milestone=(label,target,sub)=>{
       if(latest<=target)return `<div class="proj"><div class="pl"><b>${label}</b><span>${sub}</span></div><div class="pv reached">reached ✓</div></div>`;
       if(!losing)return `<div class="proj"><div class="pl"><b>${label}</b><span>${sub}</span></div><div class="pv" style="color:var(--muted)">—<small>need a downward trend</small></div></div>`;
@@ -1210,10 +1283,11 @@ async function renderInsights(){
     pc.innerHTML=
       `<div class="proj"><div class="pl"><b>Current rate</b><span>${W.length} weigh-ins over ${Math.round(spanDays)} days</span></div>
         <div class="pv" style="color:${losing?'var(--green)':'var(--copper)'}">${perWeek>0?'+':''}${perWeek.toFixed(2)}<small>kg / week</small></div></div>
-       <div class="proj"><div class="pl"><b>Projected in 4 weeks</b><span>if this rate holds</span></div>
-        <div class="pv">${proj4.toFixed(1)}<small>kg</small></div></div>`
+       <div class="proj"><div class="pl"><b>Projected in 4 weeks</b><span>${losing?'expected range':'if this rate holds'}</span></div>
+        <div class="pv">${losing?(Math.min(lo,hi).toFixed(1)+'–'+Math.max(lo,hi).toFixed(1)):proj4.toFixed(1)}<small>kg</small></div></div>`
       +milestone('−7% of start',start*0.93,'liver-fat-reduction zone')
       +milestone('−10% of start',start*0.90,'liver-fat-reversal territory');
+    if(losing&&recentSlope!=null&&recentSlope>-0.005)pc.innerHTML+='<div class="rule warn">Overall you\'re trending down, but the last two weeks have flattened — an early stall. Tighten calories ~150 or add steps before it sets in.</div>';
     // waist
     const Wa=days.filter(d=>typeof d.waist==='number');
     if(Wa.length>=2){
@@ -1275,13 +1349,177 @@ async function renderInsights(){
     oc.innerHTML=obs.length?obs.slice(0,5).map(o=>`<div class="rule ${o[0]}">${o[1]}</div>`).join('')
       :'<div class="chart-empty">Log a few more days and tailored observations appear here.</div>';
   }
+  window._insDays=days;
+  renderGoals(days);renderPatterns(days);renderCorrelations(days);renderReport(days);
 }
 
+/* ---------- intelligence helpers ---------- */
+function mean(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null;}
+function pearson(ps){const n=ps.length;if(n<4)return null;let sx=0,sy=0,sxy=0,sxx=0,syy=0;ps.forEach(([x,y])=>{sx+=x;sy+=y;sxy+=x*y;sxx+=x*x;syy+=y*y;});const d=Math.sqrt((n*sxx-sx*sx)*(n*syy-sy*sy));if(d===0)return null;return(n*sxy-sx*sy)/d;}
+function lastNDays(days,n){const m={};days.forEach(d=>m[d.date]=d);const win=[];let cur=new Date();if(cur.getHours()<ROLLOVER)cur.setDate(cur.getDate()-1);for(let i=0;i<n;i++){const k=ymd(cur);if(m[k])win.push(m[k]);cur.setDate(cur.getDate()-1);}return win;}
+function winAvg(arr,f){const v=arr.map(f).filter(x=>typeof x==='number'&&!isNaN(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+
+/* ---------- goals ---------- */
+function goalRow(label,val,st){const T=TAGS[st]||TAGS.ok;return '<div class="score"><span class="sl">'+esc(label)+'</span><span class="sv">'+val+' <span class="tag" style="color:'+T.c+';background:'+T.b+'">'+T.t+'</span></span></div>';}
+async function saveGoals(){
+  const w=parseFloat(document.getElementById('goalWeight').value);
+  const wa=parseFloat(document.getElementById('goalWaist').value);
+  const dr=parseInt(document.getElementById('goalDry').value,10);
+  GOALS={weight:isNaN(w)?null:w,waist:isNaN(wa)?null:wa,dry:isNaN(dr)?5:dr};
+  const s=(await sget('settings'))||{};s.rollover=ROLLOVER;s.goals=GOALS;await sset('settings',s);
+  renderInsights();
+}
+function renderGoals(days){
+  const el=document.getElementById('goalsCard');if(!el)return;
+  const dnum=s=>new Date(s).getTime()/86400000;
+  const W=days.filter(d=>typeof d.weight==='number').sort((a,b)=>a.date<b.date?-1:1);
+  const Wa=days.filter(d=>typeof d.waist==='number').sort((a,b)=>a.date<b.date?-1:1);
+  let prog='';
+  if(GOALS.weight&&W.length){const latest=W[W.length-1].weight;const rem=latest-GOALS.weight;let eta='';
+    if(W.length>=2){const b=dnum(W[0].date);const sl=lsq(W.map(d=>({x:dnum(d.date)-b,y:d.weight})));if(sl<-0.005&&rem>0){const e=etaLabel(rem/(-sl));eta=' · ~'+e.wks+' wks';}}
+    prog+=goalRow('Weight → '+GOALS.weight+' kg',rem<=0?'reached ✓':rem.toFixed(1)+' kg to go'+eta,rem<=0?'good':'ok');}
+  if(GOALS.waist&&Wa.length){const latest=Wa[Wa.length-1].waist;const rem=latest-GOALS.waist;let eta='';
+    if(Wa.length>=2){const b=dnum(Wa[0].date);const sl=lsq(Wa.map(d=>({x:dnum(d.date)-b,y:d.waist})));if(sl<-0.005&&rem>0){const e=etaLabel(rem/(-sl));eta=' · ~'+e.wks+' wks';}}
+    prog+=goalRow('Waist → '+GOALS.waist+' cm',rem<=0?'reached ✓':rem.toFixed(1)+' cm to go'+eta,rem<=0?'good':'ok');}
+  {const win=lastNDays(days,7);const dry=win.filter(d=>d.alcohol===0).length;const g=GOALS.dry||5;prog+=goalRow('Dry days → '+g+'/wk',dry+' / '+g+' this week',dry>=g?'good':dry>=Math.max(1,g-2)?'ok':'low');}
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'
+    +'<div style="display:flex;gap:8px"><input class="inline-input" style="flex:1;text-align:left" id="goalWeight" type="number" inputmode="decimal" placeholder="target weight kg" value="'+(GOALS.weight||'')+'">'
+    +'<input class="inline-input" style="flex:1;text-align:left" id="goalWaist" type="number" inputmode="decimal" placeholder="target waist cm" value="'+(GOALS.waist||'')+'"></div>'
+    +'<div style="display:flex;gap:8px;align-items:center"><input class="inline-input" style="flex:1;text-align:left" id="goalDry" type="number" inputmode="numeric" placeholder="dry days / week" value="'+(GOALS.dry||'')+'">'
+    +'<button class="qbtn" style="background:var(--teal-dim);border-color:var(--teal)" onclick="saveGoals()">Save</button></div></div>'
+    +(prog?('<div style="margin-top:10px">'+prog+'</div>'):'<div class="note" style="margin-top:8px">Set a target above and your pace + ETA appear here.</div>');
+}
+
+/* ---------- patterns & streaks ---------- */
+function renderPatterns(days){
+  const el=document.getElementById('patternCard');if(!el)return;
+  const dnum=s=>new Date(s).getTime()/86400000;
+  const sorted=days.slice().sort((a,b)=>a.date<b.date?-1:1);
+  const byDate={};sorted.forEach(d=>byDate[d.date]=d);
+  const tiles=[];
+  if(sorted.length){
+    let longest=0,run=0;let cur=new Date(sorted[0].date);const end=new Date();if(end.getHours()<ROLLOVER)end.setDate(end.getDate()-1);
+    const seq=[];while(cur<=end){seq.push(byDate[ymd(cur)]||null);cur.setDate(cur.getDate()+1);}
+    seq.forEach(d=>{if(d&&d.alcohol===0){run++;longest=Math.max(longest,run);}else run=0;});
+    let curStreak=0;for(let i=seq.length-1;i>=0;i--){const d=seq[i];if(d&&d.alcohol===0)curStreak++;else break;}
+    tiles.push(['Current dry streak',curStreak+' d']);tiles.push(['Longest dry streak',longest+' d']);
+  }
+  let logStreak=0;{let cur=new Date();if(cur.getHours()<ROLLOVER)cur.setDate(cur.getDate()-1);for(;;){if(byDate[ymd(cur)]){logStreak++;cur.setDate(cur.getDate()-1);}else break;}}
+  tiles.push(['Logging streak',logStreak+' d']);
+  const sleeps=sorted.filter(d=>typeof d.sleep==='number');if(sleeps.length){const best=Math.max.apply(null,sleeps.map(d=>d.sleep));tiles.push(['Best night sleep',best.toFixed(1)+' h']);}
+  const notesArr=[];
+  const wkdayA=[],wkendA=[];sorted.forEach(d=>{const dd=new Date(d.date).getDay();(dd===0||dd===6?wkendA:wkdayA).push(d.alcohol||0);});
+  if(wkdayA.length>=3&&wkendA.length>=2){const a=mean(wkendA),b=mean(wkdayA);if(a-b>=0.5)notesArr.push('Weekends average '+a.toFixed(1)+' drinks vs '+b.toFixed(1)+' on weekdays — the weekend is where the dry-day battle is won or lost.');}
+  const W=sorted.filter(d=>typeof d.weight==='number'),Wa=sorted.filter(d=>typeof d.waist==='number');
+  if(W.length>=3&&Wa.length>=3){const wb=dnum(W[0].date),ws=lsq(W.map(d=>({x:dnum(d.date)-wb,y:d.weight})));const ab=dnum(Wa[0].date),as=lsq(Wa.map(d=>({x:dnum(d.date)-ab,y:d.waist})));
+    if(ws!=null&&as!=null&&Math.abs(ws*7)<0.15&&as*7<=-0.2)notesArr.push('Waist is shrinking while the scale holds steady — that\'s recomposition: fat down, muscle kept. The tape is telling the truth, not the scale.');}
+  const tileHtml=tiles.map(t=>'<div class="score"><span class="sl">'+t[0]+'</span><span class="sv">'+t[1]+'</span></div>').join('');
+  const noteHtml=notesArr.map(n=>'<div class="rule" style="margin-top:8px">'+n+'</div>').join('');
+  el.innerHTML=(tileHtml||noteHtml)?(tileHtml+noteHtml):'<div class="chart-empty">Log a few more days to reveal streaks and patterns.</div>';
+}
+
+/* ---------- correlations (your n=1 science) ---------- */
+function renderCorrelations(days){
+  const el=document.getElementById('corrCard');if(!el)return;
+  const sorted=days.slice().sort((a,b)=>a.date<b.date?-1:1);
+  const byDate={};sorted.forEach(d=>byDate[d.date]=d);
+  const out=[];
+  const adR=[],ayR=[],adS=[],ayS=[];
+  sorted.forEach(d=>{const nd=new Date(d.date);nd.setDate(nd.getDate()+1);const n=byDate[ymd(nd)];if(!n)return;const drank=d.alcohol>0;
+    if(typeof n.rhr==='number')(drank?adR:ayR).push(n.rhr);
+    if(typeof n.sleep==='number')(drank?adS:ayS).push(n.sleep);});
+  if(adR.length>=3&&ayR.length>=3){const a=mean(adR),b=mean(ayR),diff=a-b;if(Math.abs(diff)>=1)out.push(['warn','After a drinking night your resting HR averages '+a.toFixed(0)+' bpm vs '+b.toFixed(0)+' after a dry night ('+(diff>0?'+':'')+diff.toFixed(0)+' bpm) — a measurable recovery cost.']);}
+  if(adS.length>=3&&ayS.length>=3){const a=mean(adS),b=mean(ayS),diff=a-b;if(Math.abs(diff)>=0.4)out.push(['warn','You sleep '+a.toFixed(1)+' h after drinking vs '+b.toFixed(1)+' h after a dry night ('+(diff>0?'+':'')+diff.toFixed(1)+' h).']);}
+  const hiBP=[],loBP=[];sorted.forEach((d,i)=>{if(typeof d.bpSys!=='number')return;let sum=0;for(let j=Math.max(0,i-2);j<=i;j++)sum+=(sorted[j].alcohol||0);(sum>0?hiBP:loBP).push(d.bpSys);});
+  if(hiBP.length>=3&&loBP.length>=3){const a=mean(hiBP),b=mean(loBP),diff=a-b;if(Math.abs(diff)>=2)out.push([diff>0?'warn':'','Systolic BP averages '+a.toFixed(0)+' in 3-day windows that include alcohol vs '+b.toFixed(0)+' alcohol-free ('+(diff>0?'+':'')+diff.toFixed(0)+').']);}
+  const sr=sorted.filter(d=>typeof d.sleep==='number'&&typeof d.rhr==='number').map(d=>[d.sleep,d.rhr]);const r=pearson(sr);
+  if(r!==null&&Math.abs(r)>=0.4)out.push(['','More sleep tracks with '+(r<0?'lower':'higher')+' resting HR for you (r='+r.toFixed(2)+', n='+sr.length+').']);
+  const sdry=sorted.filter(d=>d.alcohol===0&&d.steps>0).map(d=>d.steps),sdr=sorted.filter(d=>d.alcohol>0&&d.steps>0).map(d=>d.steps);
+  if(sdry.length>=3&&sdr.length>=3){const a=mean(sdry),b=mean(sdr),diff=a-b;if(Math.abs(diff)>=800)out.push(['','You walk '+Math.round(a).toLocaleString()+' steps on dry days vs '+Math.round(b).toLocaleString()+' on drinking days.']);}
+  el.innerHTML=out.length?out.slice(0,6).map(o=>'<div class="rule '+o[0]+'">'+o[1]+'</div>').join(''):'<div class="chart-empty">As you log alcohol, sleep, resting HR and BP over more days, your personal correlations appear here.</div>';
+}
+
+/* ---------- reports (weekly / monthly, exportable) ---------- */
+let REPORT_PERIOD=7;let _reportHTML='';
+function setReportPeriod(p){REPORT_PERIOD=p;renderReport(window._insDays||[]);}
+function arrow(cur,prev,goodDown){if(cur==null||prev==null)return '';const d=cur-prev;if(Math.abs(d)<1e-9)return ' <span style="color:var(--muted)">→</span>';const better=goodDown?d<0:d>0;const sym=d<0?'↓':'↑';return ' <span style="color:'+(better?'var(--green)':'var(--copper)')+'">'+sym+Math.abs(d).toFixed(Math.abs(d)<10?1:0)+'</span>';}
+function renderReport(days){
+  const el=document.getElementById('reportCard');if(!el)return;
+  const m={};days.forEach(d=>m[d.date]=d);
+  const end=new Date();if(end.getHours()<ROLLOVER)end.setDate(end.getDate()-1);
+  const win=(off,len)=>{const a=[];let c=new Date(end);c.setDate(c.getDate()-off);for(let i=0;i<len;i++){const k=ymd(c);if(m[k])a.push(m[k]);c.setDate(c.getDate()-1);}return a;};
+  const P=REPORT_PERIOD,cur=win(0,P),prev=win(P,P);
+  const prof=activeProfile();
+  if(!cur.length){el.innerHTML=reportToggle()+'<div class="chart-empty">No days logged in this period yet.</div>';return;}
+  const wEdge=arr=>{const W=arr.filter(d=>typeof d.weight==='number').sort((a,b)=>a.date<b.date?-1:1);return W.length?{first:W[0].weight,last:W[W.length-1].weight}:null;};
+  const wc=wEdge(cur);const wChange=wc?(wc.last-wc.first):null;
+  const dry=cur.filter(d=>d.alcohol===0).length,drink=cur.filter(d=>d.alcohol>0).length;
+  const pdry=prev.filter(d=>d.alcohol===0).length;
+  const train=cur.filter(d=>d.training&&d.training!=='rest'&&d.training!=='').length;
+  const ptrain=prev.filter(d=>d.training&&d.training!=='rest'&&d.training!=='').length;
+  const metric=(label,cv,pv,unit,goodDown,fmt)=>{if(cv==null)return '';fmt=fmt||(x=>x.toFixed(1));return '<div class="score"><span class="sl">'+label+'</span><span class="sv">'+fmt(cv)+(unit?(' '+unit):'')+arrow(cv,pv,goodDown)+'</span></div>';};
+  const steps=winAvg(cur,d=>d.steps>0?d.steps:null),psteps=winAvg(prev,d=>d.steps>0?d.steps:null);
+  const prot=winAvg(cur,d=>d.protein>0?d.protein:null),pprot=winAvg(prev,d=>d.protein>0?d.protein:null);
+  const cal=winAvg(cur,d=>d.calories>0?d.calories:null),pcal=winAvg(prev,d=>d.calories>0?d.calories:null);
+  const sleep=winAvg(cur,d=>d.sleep),psleep=winAvg(prev,d=>d.sleep);
+  const rhr=winAvg(cur,d=>d.rhr),prhr=winAvg(prev,d=>d.rhr);
+  const bps=winAvg(cur,d=>d.bpSys),pbps=winAvg(prev,d=>d.bpSys);
+  let rows='';
+  rows+='<div class="score"><span class="sl">Days logged</span><span class="sv">'+cur.length+' / '+P+'</span></div>';
+  if(wChange!=null)rows+='<div class="score"><span class="sl">Weight change</span><span class="sv">'+(wChange>0?'+':'')+wChange.toFixed(1)+' kg</span></div>';
+  rows+='<div class="score"><span class="sl">Dry days</span><span class="sv">'+dry+' / '+cur.length+arrow(dry,pdry,false)+'</span></div>';
+  rows+=metric('Avg steps',steps,psteps,'',false,x=>Math.round(x).toLocaleString());
+  rows+=metric('Avg protein',prot,pprot,'g',false,x=>Math.round(x));
+  rows+=metric('Avg calories',cal,pcal,'',true,x=>Math.round(x));
+  rows+=metric('Avg sleep',sleep,psleep,'h',false);
+  rows+=metric('Avg resting HR',rhr,prhr,'bpm',true,x=>Math.round(x));
+  rows+=metric('Avg systolic BP',bps,pbps,'',true,x=>Math.round(x));
+  rows+='<div class="score"><span class="sl">Training days</span><span class="sv">'+train+arrow(train,ptrain,false)+'</span></div>';
+  // win + leak + focus
+  const wins=[],leaks=[];
+  if(dry>=Math.ceil(P*0.7))wins.push('held '+dry+' dry days');
+  if(prot!=null&&prot>=130)wins.push('protein around '+Math.round(prot)+'g');
+  if(steps!=null&&steps>=8000)wins.push('steps averaging '+Math.round(steps).toLocaleString());
+  if(wChange!=null&&wChange<=-0.3)wins.push('weight down '+Math.abs(wChange).toFixed(1)+'kg');
+  if(drink>=Math.ceil(P*0.4))leaks.push(drink+' drinking days');
+  if(steps!=null&&steps<5000)leaks.push('low steps ('+Math.round(steps).toLocaleString()+')');
+  if(prot!=null&&prot<110)leaks.push('protein under floor ('+Math.round(prot)+'g)');
+  if(sleep!=null&&sleep<6)leaks.push('short sleep ('+sleep.toFixed(1)+'h)');
+  let focus='Keep the dry days climbing and protein at the floor.';
+  if(leaks.length)focus='Next '+(P===7?'week':'month')+': fix '+leaks[0]+' first — it\'s the biggest leak.';
+  const period=P===7?'Weekly':'Monthly';
+  const dateStr=new Date().toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+  let body='<div style="margin-bottom:6px;color:var(--muted);font-size:13px">'+esc(prof?prof.name:'')+' · '+period+' review · '+dateStr+'</div>'+rows;
+  if(wins.length)body+='<div class="rule" style="margin-top:8px"><b>Biggest wins:</b> '+wins.join(', ')+'.</div>';
+  if(leaks.length)body+='<div class="rule warn"><b>Biggest leaks:</b> '+leaks.join(', ')+'.</div>';
+  body+='<div class="rule"><b>Focus:</b> '+focus+'</div>';
+  el.innerHTML=reportToggle()+body+'<div class="qbtns" style="margin-top:10px"><button class="qbtn" onclick="downloadReport()">Download report</button></div>';
+  // build a clean text report for export
+  let exp='Reset 87 — '+period+' report\n'+(prof?prof.name:'')+' · '+dateStr+'\n'+cur.length+'/'+P+' days logged\n\n';
+  el.querySelectorAll('.score').forEach(s=>{const l=s.querySelector('.sl').textContent;const v=s.querySelector('.sv').textContent.replace(/\s+/g,' ').trim();exp+=l+': '+v+'\n';});
+  if(wins.length)exp+='\nBiggest wins: '+wins.join(', ')+'.';
+  if(leaks.length)exp+='\nBiggest leaks: '+leaks.join(', ')+'.';
+  exp+='\nFocus: '+focus+'\n';
+  _reportHTML='<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset 87 '+period+' report</title>'
+    +'<body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:680px;margin:24px auto;padding:0 18px;color:#111;line-height:1.5">'
+    +'<pre style="white-space:pre-wrap;font:inherit">'+esc(exp)+'</pre>';
+}
+function reportToggle(){return '<div class="chips" style="margin-bottom:10px">'
+  +'<button class="chip'+(REPORT_PERIOD===7?' on':'')+'" onclick="setReportPeriod(7)">Weekly</button>'
+  +'<button class="chip'+(REPORT_PERIOD===28?' on':'')+'" onclick="setReportPeriod(28)">Monthly</button></div>';}
+function downloadReport(){try{const blob=new Blob([_reportHTML],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);const prof=activeProfile();a.download='reset87-'+(prof?prof.name.replace(/\s+/g,'-').toLowerCase():'report')+'-'+(REPORT_PERIOD===7?'weekly':'monthly')+'-'+logicalToday()+'.html';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},0);}catch(e){}}
+
 /* ---------- day-boundary setting ---------- */
-async function loadSettings(){const s=await sget('settings');if(s&&typeof s.rollover==='number')ROLLOVER=s.rollover;updateRolloverUI();}
+let GOALS={weight:null,waist:null,dry:5};
+async function loadSettings(){
+  ROLLOVER=0;GOALS={weight:null,waist:null,dry:5};            /* reset first — never carry across profiles */
+  const s=await sget('settings');
+  if(s){if(typeof s.rollover==='number')ROLLOVER=s.rollover;if(s.goals)GOALS=Object.assign({weight:null,waist:null,dry:5},s.goals);}
+  updateRolloverUI();
+}
 function updateRolloverUI(){document.querySelectorAll('#rolloverOpts .chip').forEach(c=>c.classList.toggle('on',+c.dataset.h===ROLLOVER));}
 async function setRollover(h){
-  ROLLOVER=h;await sset('settings',{rollover:h});updateRolloverUI();await load();
+  ROLLOVER=h;const s=(await sget('settings'))||{};s.rollover=h;s.goals=GOALS;await sset('settings',s);updateRolloverUI();await load();
   if(!document.getElementById('view-trend').classList.contains('hidden'))renderTrend();
   if(!document.getElementById('view-insights').classList.contains('hidden'))renderInsights();
 }
@@ -1329,45 +1567,37 @@ function renderProfileList(){
   const el=document.getElementById('profileList');if(!el)return;
   const ps=getProfiles();
   if(_isApp){el.innerHTML='<div class="note">Profiles work on the hosted site. Open your GitHub Pages URL to use them.</div>';return;}
+  if(ps.length===0){el.innerHTML='<div class="note">Connect Cloud sync below, then add profiles — they\'ll appear on every device automatically.</div>';return;}
   el.innerHTML=ps.map(p=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">'
-    +'<div style="min-width:0"><b>'+esc(p.name)+'</b>'+(p.id===activeId()?' <span style="color:var(--teal)">· active</span>':'')
-    +'<div class="note" style="margin:3px 0 0;word-break:break-all">vault '+esc(p.vault)+'</div></div>'
+    +'<div style="min-width:0"><b>'+esc(p.name)+'</b>'+(p.id===activeId()?' <span style="color:var(--teal)">· active</span>':'')+'</div>'
     +'<div class="chips" style="flex-wrap:nowrap"><button class="chip" onclick="renameProfile(\''+p.id+'\')">rename</button>'
-    +'<button class="chip" onclick="editVault(\''+p.id+'\')">vault</button>'
     +'<button class="chip" onclick="deleteProfile(\''+p.id+'\')">delete</button></div></div>').join('');
 }
 async function switchProfile(id){
   setActiveId(id);
-  cloudInit();
   await loadSettings();await load();
   renderProfiles();renderProfileList();refreshOpenViews();updateCloudUI();
   if(sb){const ch=await cloudSync();if(ch){await loadSettings();await load();refreshOpenViews();}updateCloudUI('synced ✓');}
 }
-function addProfile(){
+async function addProfile(){
   const name=(prompt("Name for the new profile (e.g. your wife's name):")||'').trim();if(!name)return;
-  const vault=(prompt('Vault — leave blank to create a new one, or paste an existing vault to sync this profile with another device:')||'').trim()||newVault();
-  const ps=getProfiles();const id='p'+Date.now().toString(36);
-  ps.push({id:id,name:name,vault:vault});saveProfiles(ps);
+  const ps=getProfiles();const id=newId();
+  ps.push({id:id,name:name,vault:newVault()});saveProfilesLocal(ps);
+  await pushRegistry();
   switchProfile(id);
 }
-function renameProfile(id){
+async function renameProfile(id){
   const ps=getProfiles();const p=ps.find(x=>x.id===id);if(!p)return;
   const name=(prompt('Rename profile:',p.name)||'').trim();if(!name)return;
-  p.name=name;saveProfiles(ps);renderProfiles();renderProfileList();
+  p.name=name;saveProfilesLocal(ps);await pushRegistry();renderProfiles();renderProfileList();
 }
-function editVault(id){
-  const ps=getProfiles();const p=ps.find(x=>x.id===id);if(!p)return;
-  const v=(prompt('Vault for "'+p.name+'". Paste the same vault from your other device to sync them:',p.vault)||'').trim();if(!v)return;
-  p.vault=v;saveProfiles(ps);renderProfileList();
-  if(id===activeId())switchProfile(id);
-}
-function deleteProfile(id){
+async function deleteProfile(id){
   let ps=getProfiles();
   if(ps.length<=1){alert('Keep at least one profile.');return;}
   const p=ps.find(x=>x.id===id);if(!p)return;
-  if(!confirm('Delete profile "'+p.name+'"? Its data on this device is removed. The cloud copy stays in its vault and can be restored by re-adding the profile with the same vault.'))return;
+  if(!confirm('Delete profile "'+p.name+'"? This removes it from all devices. Logs in its vault remain in the cloud but become hidden.'))return;
   try{const pre='reset87:p:'+id+':';const del=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(kk&&kk.indexOf(pre)===0)del.push(kk);}del.forEach(k=>localStorage.removeItem(k));}catch(e){}
-  ps=ps.filter(x=>x.id!==id);saveProfiles(ps);
+  ps=ps.filter(x=>x.id!==id);saveProfilesLocal(ps);await pushRegistry();
   if(activeId()===id&&ps[0])setActiveId(ps[0].id);
   switchProfile(activeId());
 }
@@ -1377,44 +1607,58 @@ function refreshOpenViews(){
   if(!document.getElementById('view-trend').classList.contains('hidden'))renderTrend();
   if(!document.getElementById('view-insights').classList.contains('hidden'))renderInsights();
 }
+function _setIfIdle(id,v){const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v||'';}
 function updateCloudUI(status){
-  const c=sbCreds();
-  const u=document.getElementById('cloudUrl'),k=document.getElementById('cloudKey');
-  if(u&&c){if(document.activeElement!==u)u.value=c.url||'';if(document.activeElement!==k)k.value=c.key||'';}
+  const c=sbCfg();
+  _setIfIdle('cloudUrl',c&&c.url);_setIfIdle('cloudKey',c&&c.key);_setIfIdle('cloudAccount',c&&c.account);
   const st=document.getElementById('cloudStatus');if(st)st.textContent=status||(sb?'on':'off');
-  const vn=document.getElementById('cloudVaultNote');const p=activeProfile();
-  if(vn)vn.innerHTML=p?('Active profile <b>'+esc(p.name)+'</b> syncs to vault <b style="word-break:break-all">'+esc(p.vault)+'</b>'):'';
+  const sc=document.getElementById('cloudSyncCode');
+  if(sc)sc.innerHTML=(c&&c.account)?('Your <b>Sync code</b>: <b style="word-break:break-all">'+esc(c.account)+'</b><br>Enter this same code (plus the URL & key) on any other phone, and both profiles + all data appear automatically.'):'';
 }
 async function cloudConnect(){
   if(_isApp){document.getElementById('cloudNote').textContent='Sync runs on the hosted site, not the in-Claude preview. Open your GitHub Pages URL to connect.';return;}
   const url=document.getElementById('cloudUrl').value.trim();
   const key=document.getElementById('cloudKey').value.trim();
-  if(!url||!key){document.getElementById('cloudNote').textContent='Enter both the Project URL and the anon public key.';return;}
-  saveSbCreds({url,key});
+  let account=document.getElementById('cloudAccount').value.trim();
+  if(!url||!key){document.getElementById('cloudNote').textContent='Enter the Project URL and the anon public key.';return;}
+  if(!account)account=newAccount();
+  saveSbCfg({url,key,account});
   if(cloudInit()){
     updateCloudUI('syncing…');
-    const ch=await cloudSync();
-    if(ch){await loadSettings();await load();}
-    refreshOpenViews();updateCloudUI('synced ✓');
-    document.getElementById('cloudNote').textContent='Connected. Each profile syncs to its own vault — see the Profiles card above.';
+    const reg=await pullRegistry();
+    if(reg&&reg.length){ if(!activeProfile())setActiveId(reg[0].id); }
+    else { if(getProfiles().length===0){const id=newId();saveProfilesLocal([{id:id,name:'Pravin',vault:newVault()}]);setActiveId(id);} await pushRegistry(); }
+    await loadSettings();await load();
+    const ch=await cloudSync();if(ch){await loadSettings();await load();}
+    renderProfiles();renderProfileList();refreshOpenViews();updateCloudUI('synced ✓');
+    document.getElementById('cloudNote').textContent='Connected. Profiles and data now live in the cloud — no need to recreate anything on other devices.';
   }else{
     updateCloudUI('off');
     document.getElementById('cloudNote').textContent='Could not connect — check the URL and anon key (and that the Supabase library loaded).';
   }
 }
 function cloudDisconnect(){
-  _lsDel('reset87:_sbcreds');sb=null;updateCloudUI('off');
-  document.getElementById('cloudNote').textContent='Disconnected. Data stays on this device. Reconnect to resync.';
+  _lsDel('reset87:_sb');sb=null;updateCloudUI('off');
+  document.getElementById('cloudNote').textContent='Disconnected. Cached data stays on this device. Reconnect with the same Sync code to resync.';
 }
 function show(v){['today','trend','insights','plan'].forEach(x=>document.getElementById('view-'+x).classList.toggle('hidden',x!==v));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
   if(v==='trend')renderTrend();if(v==='insights')renderInsights();window.scrollTo(0,0);}
 
 (async()=>{
-  ensureProfiles();
-  renderProfiles();renderProfileList();
+  migrateLocal();
+  cloudInit();
+  if(sb){
+    const reg=await pullRegistry();
+    if(reg&&reg.length){ if(!activeProfile())setActiveId(reg[0].id); }
+    else { if(getProfiles().length===0){const id=newId();saveProfilesLocal([{id:id,name:'Pravin',vault:newVault()}]);setActiveId(id);} await pushRegistry(); }
+  } else if(getProfiles().length===0){
+    const id=newId();saveProfilesLocal([{id:id,name:'Pravin',vault:newVault()}]);setActiveId(id);
+  }
+  if(!activeProfile()&&getProfiles()[0])setActiveId(getProfiles()[0].id);
+  renderProfiles();renderProfileList();updateCloudUI();
+  makeAccordion();colorizeSections();
   await loadSettings();await load();
-  cloudInit();updateCloudUI();
   if(sb){const ch=await cloudSync();if(ch){await loadSettings();await load();}refreshOpenViews();updateCloudUI('synced ✓');}
 })();
 
