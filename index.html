@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b11</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b13</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -1038,7 +1038,141 @@ const FOOD_DB=[
   {n:'Apple',k:['apple'],c:95,p:0},
   {n:'Orange',k:['orange','mosambi'],c:62,p:1},
   {n:'Mango',k:['mango'],c:150,p:1},
-  {n:'Salad',k:['salad'],c:80,p:3}
+  {n:'Salad',k:['salad'],c:80,p:3},
+  // dairy & spreads
+  {n:'Cheese (slice)',k:['cheese slice','cheese','mozzarella','cheddar'],c:80,p:5},
+  {n:'Butter (1 tbsp)',k:['butter'],c:100,p:0},
+  {n:'Ghee (1 tbsp)',k:['ghee'],c:120,p:0},
+  {n:'Peanut butter (1 tbsp)',k:['peanut butter'],c:95,p:4},
+  {n:'Jam (1 tbsp)',k:['jam','marmalade'],c:55,p:0},
+  // pasta & western mains
+  {n:'White-sauce pasta',k:['white sauce pasta','alfredo','cheese pasta','creamy pasta','mac and cheese','mac n cheese','macaroni and cheese'],c:470,p:16},
+  {n:'Red-sauce pasta',k:['red sauce pasta','arrabiata','tomato pasta','marinara'],c:380,p:12},
+  {n:'Pasta',k:['pasta','spaghetti','penne','macaroni'],c:400,p:13},
+  {n:'Lasagna',k:['lasagna','lasagne'],c:450,p:20},
+  {n:'Garlic bread',k:['garlic bread'],c:200,p:5},
+  {n:'Cheese toast',k:['cheese toast','grilled cheese'],c:300,p:12},
+  {n:'Bread / toast (slice)',k:['bread','toast'],c:75,p:3},
+  // eggs & meats
+  {n:'Egg bhurji / scrambled',k:['egg bhurji','bhurji','scrambled egg'],c:200,p:13},
+  {n:'Fried egg',k:['fried egg','sunny side'],c:90,p:6},
+  {n:'Boiled egg',k:['boiled egg'],c:78,p:6},
+  {n:'Bacon (2 rashers)',k:['bacon'],c:90,p:6},
+  {n:'Sausage',k:['sausage'],c:120,p:6},
+  {n:'Chicken nuggets (6)',k:['chicken nuggets','nuggets'],c:300,p:15},
+  {n:'Chicken wings',k:['chicken wings','wings'],c:300,p:24},
+  {n:'Hot dog',k:['hot dog','hotdog'],c:290,p:11},
+  {n:'Shawarma',k:['shawarma'],c:450,p:25},
+  // indo-chinese & street
+  {n:'Momos (6)',k:['momos','momo','dumplings'],c:280,p:10},
+  {n:'Spring roll',k:['spring roll'],c:150,p:4},
+  {n:'Manchurian',k:['manchurian'],c:300,p:8},
+  {n:'Chilli paneer / chicken',k:['chilli paneer','chilli chicken','gobi manchurian'],c:320,p:15},
+  {n:'Pav bhaji',k:['pav bhaji'],c:400,p:9},
+  {n:'Vada pav',k:['vada pav'],c:290,p:7},
+  // more indian mains
+  {n:'Pulao',k:['pulao','pulav','veg pulao','peas pulao'],c:300,p:6},
+  {n:'Palak paneer',k:['palak paneer'],c:300,p:13},
+  {n:'Kadai paneer',k:['kadai paneer'],c:330,p:14},
+  {n:'Dal makhani',k:['dal makhani'],c:280,p:9},
+  {n:'Dal tadka / fry',k:['dal tadka','dal fry'],c:180,p:9},
+  {n:'Mixed veg / sabzi',k:['mixed veg','veg curry','sabzi','subzi'],c:150,p:4},
+  {n:'Bhindi / okra',k:['bhindi','okra','vendakkai'],c:130,p:3},
+  {n:'South-Indian meals',k:['thali','full meals','south indian meals','meals'],c:600,p:18},
+  // breakfast cereals
+  {n:'Cornflakes + milk',k:['cornflakes','corn flakes'],c:200,p:6},
+  {n:'Muesli / granola',k:['muesli','granola'],c:220,p:6},
+  // snacks & nuts
+  {n:'Popcorn',k:['popcorn'],c:150,p:3},
+  {n:'Peanuts',k:['peanuts','groundnut','verkadalai'],c:160,p:7},
+  {n:'Cashews',k:['cashew','kaju'],c:160,p:5},
+  {n:'Makhana / fox nuts',k:['makhana','fox nut'],c:100,p:3},
+  {n:'Protein / energy bar',k:['protein bar','energy bar'],c:200,p:15},
+  {n:'Dates (2)',k:['dates','khajur'],c:60,p:0},
+  // fruit
+  {n:'Grapes',k:['grapes'],c:60,p:1},
+  {n:'Watermelon',k:['watermelon'],c:50,p:1},
+  {n:'Papaya',k:['papaya'],c:60,p:1},
+  {n:'Guava',k:['guava','koyya'],c:70,p:1},
+  {n:'Pomegranate',k:['pomegranate'],c:80,p:1},
+  // drinks
+  {n:'Green tea',k:['green tea'],c:2,p:0},
+  {n:'Black coffee',k:['black coffee'],c:5,p:0},
+  {n:'Smoothie',k:['smoothie'],c:200,p:5},
+  // ===== South Indian — tiffin / breakfast =====
+  {n:'Adai',k:['adai'],c:180,p:8},
+  {n:'Pesarattu',k:['pesarattu','pesarat'],c:170,p:8},
+  {n:'Set dosa (2-3)',k:['set dosa'],c:300,p:6},
+  {n:'Ghee/paper roast dosa',k:['ghee roast','paper roast','paper dosa','ghee dosa'],c:330,p:6},
+  {n:'Onion dosa',k:['onion dosa'],c:200,p:4},
+  {n:'Podi dosa',k:['podi dosa'],c:230,p:5},
+  {n:'Kal dosa (2)',k:['kal dosa'],c:160,p:4},
+  {n:'Neer dosa (2)',k:['neer dosa'],c:90,p:2},
+  {n:'Rava idli (2)',k:['rava idli'],c:120,p:3},
+  {n:'Kanchipuram idli',k:['kanchipuram idli','kara idli'],c:120,p:4},
+  {n:'Paniyaram (5)',k:['paniyaram','kuzhi paniyaram','appe'],c:150,p:4},
+  {n:'Puttu',k:['puttu'],c:200,p:4},
+  {n:'Sevai',k:['sevai','santhakai','rice sevai'],c:200,p:4},
+  {n:'Semiya / vermicelli upma',k:['semiya upma','vermicelli upma','semiya'],c:230,p:5},
+  {n:'Kesari / rava kesari',k:['kesari','rava kesari','kesari bath'],c:300,p:4},
+  {n:'Khara bath',k:['khara bath','kharabath'],c:250,p:5},
+  {n:'Ragi mudde / ball',k:['ragi mudde','ragi ball','ragi kali'],c:180,p:4},
+  {n:'Akki rotti',k:['akki rotti'],c:200,p:4},
+  {n:'Maddur vada',k:['maddur vada'],c:150,p:3},
+  {n:'Masala / paruppu vada',k:['masala vada','paruppu vada','masala vadai','keerai vadai'],c:150,p:5},
+  // ===== South Indian — variety rice =====
+  {n:'Coconut rice',k:['coconut rice','thengai sadam'],c:300,p:5},
+  {n:'Mint / pudina rice',k:['mint rice','pudina rice'],c:280,p:5},
+  {n:'Vangi bath / brinjal rice',k:['vangi bath','brinjal rice'],c:300,p:6},
+  {n:'Veg biryani',k:['veg biryani','vegetable biryani'],c:400,p:9},
+  {n:'Egg biryani',k:['egg biryani'],c:450,p:16},
+  {n:'Chicken biryani',k:['chicken biryani'],c:500,p:25},
+  {n:'Mutton biryani',k:['mutton biryani'],c:550,p:26},
+  {n:'Podi rice',k:['podi rice','paruppu podi rice'],c:300,p:7},
+  // ===== South Indian — kuzhambu / curries / veg =====
+  {n:'Puli / milagu kuzhambu',k:['puli kuzhambu','milagu kuzhambu'],c:120,p:3},
+  {n:'Poondu (garlic) kuzhambu',k:['poondu kuzhambu','garlic kuzhambu'],c:130,p:3},
+  {n:'Ennai kathirikai',k:['ennai kathirikai','gutti vankaya','stuffed brinjal'],c:200,p:4},
+  {n:'Keerai / greens',k:['keerai','keerai masiyal','keerai poriyal','greens'],c:90,p:4},
+  {n:'Urulai / potato roast',k:['urulai','potato roast','aloo roast'],c:180,p:3},
+  {n:'Paruppu usili',k:['paruppu usili','usili'],c:160,p:9},
+  {n:'Kadala curry',k:['kadala curry','kadala','black chana'],c:200,p:9},
+  {n:'Thoran / olan',k:['thoran','olan','erissery'],c:120,p:3},
+  {n:'Chutney',k:['coconut chutney','tomato chutney','onion chutney','mint chutney','chutney','thuvaiyal','thogayal','thengai chutney'],c:80,p:2},
+  {n:'Idli podi (gunpowder)',k:['idli podi','milagai podi','gunpowder','molaga podi'],c:60,p:2},
+  // ===== South Indian — non-veg =====
+  {n:'Chettinad / pepper chicken',k:['chettinad chicken','pepper chicken','chicken chettinad','kozhi varuval','chicken varuval','chicken chukka'],c:300,p:26},
+  {n:'Country / nattu kozhi',k:['nattu kozhi','country chicken'],c:280,p:25},
+  {n:'Chicken stew',k:['chicken stew','ishtu'],c:250,p:20},
+  {n:'Mutton chukka / fry',k:['mutton chukka','mutton fry','mutton roast','aatu kari varuval'],c:320,p:24},
+  {n:'Mutton kuzhambu',k:['mutton kuzhambu','mutton gravy'],c:320,p:20},
+  {n:'Kola urundai',k:['kola urundai','mutton balls'],c:200,p:14},
+  {n:'Prawn / eral',k:['prawn','eral','royyala'],c:200,p:24},
+  {n:'Crab masala',k:['crab','nandu'],c:180,p:18},
+  {n:'Fish moilee',k:['fish moilee','meen moilee'],c:220,p:18},
+  {n:'Egg roast / podimas',k:['egg roast','muttai podimas','egg podimas'],c:180,p:11},
+  {n:'Beef fry',k:['beef fry','beef ularthiyathu','beef'],c:250,p:26},
+  // ===== South Indian — snacks =====
+  {n:'Pakoda / pakora',k:['pakoda','pakora','onion pakoda'],c:180,p:4},
+  {n:'Seedai / thattai',k:['seedai','thattai'],c:120,p:2},
+  {n:'Mixture / kara sev',k:['mixture','kara sev'],c:150,p:3},
+  {n:'Banana chips',k:['banana chips','nendran chips'],c:160,p:1},
+  {n:'Tapioca / kappa',k:['tapioca','kappa','maravalli'],c:170,p:1},
+  // ===== South Indian — sweets =====
+  {n:'Mysore pak',k:['mysore pak'],c:180,p:2},
+  {n:'Adhirasam',k:['adhirasam','athirasam'],c:170,p:2},
+  {n:'Payasam / kheer',k:['payasam','kheer','paal payasam','semiya payasam'],c:200,p:4},
+  {n:'Sakkarai pongal',k:['sakkarai pongal','sweet pongal','chakkara pongal'],c:320,p:6},
+  {n:'Boli / poli',k:['boli','poli','obbattu','holige'],c:200,p:4},
+  {n:'Coconut burfi',k:['coconut burfi','thengai burfi'],c:160,p:2},
+  // ===== South Indian — drinks =====
+  {n:'Sukku malli coffee',k:['sukku coffee','sukku malli','dry ginger coffee'],c:50,p:1},
+  {n:'Tender coconut',k:['tender coconut','elaneer'],c:60,p:1},
+  {n:'Sugarcane juice',k:['sugarcane juice','karumbu juice'],c:180,p:0},
+  {n:'Nannari sarbath',k:['nannari','sarbath','sharbat'],c:120,p:0},
+  {n:'Paanagam',k:['paanagam','panakam'],c:120,p:0},
+  {n:'Rose milk',k:['rose milk'],c:200,p:5},
+  {n:'Jigarthanda',k:['jigarthanda'],c:300,p:6}
 ];
 const UNIT_FACTOR={spoon:0.1,spoons:0.1,tbsp:0.1,tablespoon:0.1,tablespoons:0.1,tsp:0.04,teaspoon:0.04,teaspoons:0.04,
   piece:1,pieces:1,pc:1,pcs:1,slice:1,slices:1,
@@ -1064,7 +1198,7 @@ function renderFoodLog(){const el=document.getElementById('foodLog');if(!el)retu
 function estimateFood(){
   const txt=document.getElementById('foodInput').value.trim();if(!txt)return;
   const hint=document.getElementById('foodHint');
-  const phrases=txt.toLowerCase().split(/\s*[+,/]\s*|\s+and\s+/).map(s=>s.trim()).filter(Boolean);
+  const phrases=txt.toLowerCase().split(/\s*[+,/]\s*/).map(s=>s.trim()).filter(Boolean);
   const items=[],unmatched=[];
   phrases.forEach(ph=>{
     const ms=matchPhrase(ph);
