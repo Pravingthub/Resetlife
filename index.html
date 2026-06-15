@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b15</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b16</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -1109,6 +1109,12 @@ const FOOD_DB=[
   {n:'Green tea',k:['green tea'],c:2,p:0},
   {n:'Black coffee',k:['black coffee'],c:5,p:0},
   {n:'Smoothie',k:['smoothie'],c:200,p:5},
+  // veg protein
+  {n:'Soya chunks (1 cup)',k:['soya chunks','soya chunk','meal maker','soya curry'],c:170,p:25},
+  {n:'Tofu (100g)',k:['tofu'],c:120,p:12},
+  {n:'Paneer bhurji',k:['paneer bhurji'],c:280,p:18},
+  {n:'Mushroom masala',k:['mushroom'],c:150,p:5},
+  // veg protein end
   // ===== South Indian — tiffin / breakfast =====
   {n:'Adai',k:['adai'],c:180,p:8},
   {n:'Pesarattu',k:['pesarattu','pesarat'],c:170,p:8},
@@ -1463,40 +1469,40 @@ const WEEK_SHORT=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const WEEK_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const MEALPLAN=[
   { // Mon
-    b:{t:'2 pesarattu + coconut chutney',d:'Moong-dal dosa — high protein, low GI. Easy on the oil.'},
-    l:{t:'1 cup rice + sambar + cabbage poriyal + grilled chicken (or sprouts)',d:'Fill half the plate with veg, a quarter protein, a quarter rice. Curd on the side.'},
-    dn:{t:'3 idli + sambar + keerai',d:'Light, steamed, fibre-rich. No fried side tonight.'},
-    sn:{t:'Buttermilk + small handful peanuts',d:'Protein + good fat. Skip the sugar.'} },
+    b:{t:'2 pesarattu + coconut chutney + 2 boiled eggs',d:'Moong-dal dosa plus eggs — a big protein start, easy on oil.'},
+    l:{t:'1 cup rice + sambar + cabbage poriyal + 100g paneer (or soya chunks) + curd',d:'Quarter-plate rice, pile the veg, paneer/soya for protein, curd to finish. A full, satisfying meal.'},
+    dn:{t:'3 idli + sambar + keerai + 2 boiled eggs',d:'Steamed + greens + eggs. Filling and protein-rich, light on fat.'},
+    sn:{t:'Buttermilk + handful peanuts',d:'Protein + good fat between meals.'} },
   { // Tue
-    b:{t:'3 idli + sambar + tomato chutney',d:'Steamed, filling. Go easy on coconut in the chutney.'},
-    l:{t:'1 cup rice + rasam + beans poriyal + fish curry (or dal)',d:'Rasam aids digestion; fish/dal for protein. Curd to finish.'},
-    dn:{t:'2 adai + avial',d:'Adai is lentil-loaded — keeps you full through the shift.'},
-    sn:{t:'1 katori sundal / green tea + makhana',d:'Channa or rajma sundal — protein + fibre.'} },
+    b:{t:'3 idli + sambar + 2 boiled eggs',d:'Steamed and filling; eggs make it protein-complete.'},
+    l:{t:'1 cup rice + rasam + beans poriyal + thick dal + curd',d:'Dal + curd carry the protein; rasam aids digestion. Eat to comfortably full.'},
+    dn:{t:'2 adai + avial + 2 boiled eggs',d:'Adai is lentil-loaded; eggs top up the protein. Hearty.'},
+    sn:{t:'1 katori sundal (channa/rajma)',d:'Legume protein + fibre.'} },
   { // Wed
-    b:{t:'Oats + 2 boiled eggs (veg: oats + nuts + curd)',d:'Soluble fibre for the liver + lean protein.'},
-    l:{t:'Millet or 1 cup rice + mor kuzhambu + keerai poriyal + egg curry (or paneer)',d:'Swap rice for millet once or twice a week if you like.'},
-    dn:{t:'Veg soup + 2 low-oil dosa + chutney',d:'Soup first fills you up so dinner stays small.'},
-    sn:{t:'Tender coconut or a fruit',d:'Hydrating, light, no added sugar.'} },
+    b:{t:'Oats + 2–3 boiled eggs',d:'Soluble fibre for the liver, eggs for lean protein.'},
+    l:{t:'Millet or 1 cup rice + mor kuzhambu + keerai poriyal + 100g paneer + curd',d:'Swap rice for millet if you like. Paneer + curd = solid protein.'},
+    dn:{t:'Soya-chunk curry + 2 low-oil dosa + veg soup',d:'Soya is very high protein and lean — a proper dinner.'},
+    sn:{t:'Tender coconut or fruit + handful almonds',d:'Hydration, fibre and good fat.'} },
   { // Thu
-    b:{t:'2 dosa + sambar + chutney',d:'Spread thin, minimal oil. Sambar adds dal protein.'},
-    l:{t:'1 cup rice + kara kuzhambu + carrot-beans poriyal + chicken chukka (or sprouts)',d:'Dry chukka uses little oil. Load the poriyal.'},
-    dn:{t:'2 chapati or ragi mudde + dal tadka + salad',d:'Lower-carb dinner; ragi is a great night-shift slow-burn.'},
-    sn:{t:'Buttermilk + small handful almonds',d:'Calm the gut, steady protein.'} },
+    b:{t:'2 dosa + sambar + 2 boiled eggs',d:'Spread thin, minimal oil; eggs round it out.'},
+    l:{t:'1 cup rice + kara kuzhambu + carrot-beans poriyal + sprouts sundal + curd',d:'Sprouts + curd for protein; load the poriyal. Full plate.'},
+    dn:{t:'2 chapati or ragi mudde + dal tadka + 2 boiled eggs + salad',d:'Lower-carb dinner; ragi is a great night-shift slow-burn.'},
+    sn:{t:'Buttermilk + handful almonds',d:'Steady protein, calms the gut.'} },
   { // Fri
-    b:{t:'Small ven pongal (less ghee) + sambar',d:'Keep the portion modest and go light on ghee.'},
-    l:{t:'1 cup rice + rasam + cabbage poriyal + shallow-fried fish (or paneer)',d:'Shallow-fry, don\'t deep-fry. Curd on the side.'},
-    dn:{t:'2 idli + tomato chutney + greens',d:'Light close to the week.'},
-    sn:{t:'Green tea + roasted makhana',d:'Roasted, not fried. Crunchy and low-cal.'} },
+    b:{t:'Small ven pongal (less ghee) + sambar + 2 boiled eggs',d:'Modest pongal, light ghee, eggs for protein.'},
+    l:{t:'1 cup rice + rasam + cabbage poriyal + 100g paneer + curd',d:'Paneer + curd protein, big veg portion. Eat well.'},
+    dn:{t:'2 idli + tomato chutney + keerai + 2 boiled eggs',d:'Light but protein-complete close to the week.'},
+    sn:{t:'Green tea + roasted makhana + a few cashews',d:'Roasted, not fried.'} },
   { // Sat
-    b:{t:'2 idiyappam + light veg kurma (or egg bhurji + 1 dosa)',d:'String hoppers steam up light; keep kurma thin.'},
-    l:{t:'Controlled veg biryani (1 plate) + raita + salad',d:'Weekend treat — one plate, big salad, no seconds.'},
-    dn:{t:'Clear soup + grilled chicken or paneer tikka + salad',d:'Protein + veg, almost no carbs at night.'},
-    sn:{t:'A fruit or 1 katori sundal',d:'Keep it simple.'} },
+    b:{t:'2 idiyappam + light veg kurma + 2 boiled eggs (or paneer bhurji)',d:'Steams up light; eggs or paneer add the protein.'},
+    l:{t:'Controlled veg biryani (1 plate) + curd raita + boiled-egg side + salad',d:'Weekend treat — one plate, add eggs, big salad, no seconds.'},
+    dn:{t:'Clear soup + grilled paneer tikka + salad',d:'Protein + veg, almost no carbs at night.'},
+    sn:{t:'A fruit + 1 katori sundal',d:'Light and protein-led.'} },
   { // Sun
-    b:{t:'3 idli or 2 dosa + sambar + chutney',d:'Relaxed start, still steamed not fried.'},
-    l:{t:'1 cup rice + lean chicken/mutton kuzhambu (less oil) + poriyal',d:'Sunday special — trim visible fat, skim the oil, one cup of rice.'},
-    dn:{t:'1 uttapam + chutney + buttermilk',d:'Light landing into the new week.'},
-    sn:{t:'Small handful nuts / buttermilk',d:'Protein-led snack.'} }
+    b:{t:'3 idli or 2 dosa + sambar + 2 boiled eggs',d:'Relaxed start, steamed not fried, eggs for protein.'},
+    l:{t:'1 cup rice + rajma or channa masala + poriyal + curd',d:'Legume Sunday — hearty, protein-rich, satisfying.'},
+    dn:{t:'1 uttapam + chutney + buttermilk + 2 boiled eggs',d:'Light landing into the new week, still protein-complete.'},
+    sn:{t:'Handful nuts / a whey shake if protein is short',d:'Top up protein if the day fell short.'} }
 ];
 function mealDayIdx(){const d=new Date().getDay();return d===0?6:d-1;}
 function mealRow(label,o){return `<div class="meal"><div class="clk">${label}</div><div class="m"><b>${o.t}</b><span>${o.d}</span></div></div>`;}
@@ -1515,7 +1521,7 @@ function renderMealToday(){
   }
   el.innerHTML=`<div class="note" style="margin:0 0 10px;color:var(--text)">${name?'Hi '+name+' — ':''}here's ${WEEK_FULL[i]}'s fat-loss kitchen. Cook these; log your own portions.</div>`
     +chips+rows
-    +`<div class="note">Veg swaps: chicken / fish / egg ↔ sprouts, paneer, dal, soya. Fill the plate with veg + protein first, keep rice to ~1 cup, skip fried items &amp; sugar. Tap 🔊 Talk to hear today's plan.</div>`;
+    +`<div class="note">Vegetarian + boiled eggs. Protein every meal: eggs, paneer, soya, dal, sprouts, curd, nuts — add a whey scoop if your protein's short. Fill the plate with veg + protein first, keep rice to ~1 cup. This is full, balanced eating — fat loss comes from the calorie target, not from eating too little. Tap 🔊 Talk to hear today's plan.</div>`;
 }
 function talkMeals(){
   if(!('speechSynthesis' in window)){const f=document.getElementById('flash');if(f){f.textContent='Voice not supported here';f.classList.add('show');setTimeout(()=>{f.classList.remove('show');f.textContent='saved';},1600);}return;}
@@ -1550,7 +1556,7 @@ function buildPlan(){
     +`<div class="note">Stop eating ~2 hrs before sleep. A 10-min walk after each main meal.</div>`;
   const sim=document.getElementById('planSIMeals');
   if(sim)sim.innerHTML=MEALPLAN.map((m,i)=>`<div class="plan-day"><div class="d">${WEEK_SHORT[i]}</div><div class="t"><b>Lunch: ${m.l.t}</b><span>Dinner: ${m.dn.t} · Snack: ${m.sn.t}<br>If you eat breakfast: ${m.b.t}</span></div></div>`).join('')
-    +`<div class="note">South Indian, protein-forward, ~1,500–1,700 kcal. Veg swaps: chicken / fish / egg ↔ sprouts, paneer, dal, soya. Minimal oil &amp; ghee, no sweets or sugary coffee, plenty of greens, sambar &amp; rasam for fibre, curd for protein. Night shift: breakfast = your wake meal, main = pre-shift, dinner = mid-shift, snack = only if hungry — stop eating ~2 h before sleep. Each profile logs its own portions; this is the household menu.</div>`;
+    +`<div class="note">South Indian, vegetarian + boiled eggs, protein-forward (~1,500–1,700 kcal). Protein each meal: eggs, paneer, soya chunks, dal, sprouts, curd, nuts — whey scoop if short. Minimal oil &amp; ghee, no sweets or sugary coffee, plenty of greens, sambar &amp; rasam for fibre. This is full, balanced eating — the deficit is small and comes from the calorie target, not from under-eating. Night shift: main meal ~1 PM, lighter meal at night, optional late snack — stop eating ~2 h before sleep. Each profile logs its own portions; this is the household menu.</div>`;
 }
 
 /* ---------- insights: projection, scorecard, observations ---------- */
