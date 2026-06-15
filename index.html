@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b16</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b17</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -1470,8 +1470,8 @@ const WEEK_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','
 const MEALPLAN=[
   { // Mon
     b:{t:'2 pesarattu + coconut chutney + 2 boiled eggs',d:'Moong-dal dosa plus eggs — a big protein start, easy on oil.'},
-    l:{t:'1 cup rice + sambar + cabbage poriyal + 100g paneer (or soya chunks) + curd',d:'Quarter-plate rice, pile the veg, paneer/soya for protein, curd to finish. A full, satisfying meal.'},
-    dn:{t:'3 idli + sambar + keerai + 2 boiled eggs',d:'Steamed + greens + eggs. Filling and protein-rich, light on fat.'},
+    l:{t:'1 cup rice + sambar + cabbage &amp; keerai poriyal + 100g paneer (or soya chunks) + curd',d:'Quarter-plate rice, pile the veg, paneer/soya for protein, curd to finish. A full, satisfying meal.'},
+    dn:{t:'3 idli + sambar + carrot-beans poriyal + 2 boiled eggs',d:'Greens moved to lunch; night veg kept light and well-cooked for easy digestion before sleep.'},
     sn:{t:'Buttermilk + handful peanuts',d:'Protein + good fat between meals.'} },
   { // Tue
     b:{t:'3 idli + sambar + 2 boiled eggs',d:'Steamed and filling; eggs make it protein-complete.'},
@@ -1490,8 +1490,8 @@ const MEALPLAN=[
     sn:{t:'Buttermilk + handful almonds',d:'Steady protein, calms the gut.'} },
   { // Fri
     b:{t:'Small ven pongal (less ghee) + sambar + 2 boiled eggs',d:'Modest pongal, light ghee, eggs for protein.'},
-    l:{t:'1 cup rice + rasam + cabbage poriyal + 100g paneer + curd',d:'Paneer + curd protein, big veg portion. Eat well.'},
-    dn:{t:'2 idli + tomato chutney + keerai + 2 boiled eggs',d:'Light but protein-complete close to the week.'},
+    l:{t:'1 cup rice + rasam + cabbage poriyal + keerai + 100g paneer + curd',d:'Paneer + curd protein, big veg portion. Eat well.'},
+    dn:{t:'2 idli + tomato chutney + snake-gourd/carrot poriyal + 2 boiled eggs',d:'Greens are at lunch today; a light cooked veg at night sits easy before sleep.'},
     sn:{t:'Green tea + roasted makhana + a few cashews',d:'Roasted, not fried.'} },
   { // Sat
     b:{t:'2 idiyappam + light veg kurma + 2 boiled eggs (or paneer bhurji)',d:'Steams up light; eggs or paneer add the protein.'},
@@ -1521,7 +1521,7 @@ function renderMealToday(){
   }
   el.innerHTML=`<div class="note" style="margin:0 0 10px;color:var(--text)">${name?'Hi '+name+' — ':''}here's ${WEEK_FULL[i]}'s fat-loss kitchen. Cook these; log your own portions.</div>`
     +chips+rows
-    +`<div class="note">Vegetarian + boiled eggs. Protein every meal: eggs, paneer, soya, dal, sprouts, curd, nuts — add a whey scoop if your protein's short. Fill the plate with veg + protein first, keep rice to ~1 cup. This is full, balanced eating — fat loss comes from the calorie target, not from eating too little. Tap 🔊 Talk to hear today's plan.</div>`;
+    +`<div class="note">Vegetarian + boiled eggs. Protein every meal: eggs, paneer, soya, dal, sprouts, curd, nuts — add a whey scoop if your protein's short. Keerai/greens at the daytime meal; lighter cooked veg at night for easy digestion before sleep. Fill the plate with veg + protein first, keep rice to ~1 cup. This is full, balanced eating — fat loss comes from the calorie target, not from eating too little. Tap 🔊 Talk to hear today's plan.</div>`;
 }
 function talkMeals(){
   if(!('speechSynthesis' in window)){const f=document.getElementById('flash');if(f){f.textContent='Voice not supported here';f.classList.add('show');setTimeout(()=>{f.classList.remove('show');f.textContent='saved';},1600);}return;}
