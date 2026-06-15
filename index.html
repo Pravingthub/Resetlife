@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b10</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b11</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -951,7 +951,7 @@ const FOOD_DB=[
   {n:'Ghee rice',k:['ghee rice','jeera rice'],c:330,p:6},
   {n:'Fried rice',k:['fried rice'],c:330,p:8},
   {n:'Biryani',k:['biryani','biriyani'],c:450,p:18},
-  {n:'White rice (1 cup)',k:['white rice','plain rice','steamed rice','rice'],c:200,p:4},
+  {n:'White rice',k:['white rice','plain rice','steamed rice','rice'],c:200,p:4},
   {n:'Pongal',k:['pongal'],c:280,p:8},
   {n:'Upma',k:['upma'],c:250,p:6},
   {n:'Poha',k:['poha','aval'],c:200,p:4},
@@ -1002,8 +1002,48 @@ const FOOD_DB=[
   {n:'Biscuit',k:['biscuit','cookie'],c:50,p:1},
   {n:'Oats (40g)',k:['oats','oat'],c:150,p:5},
   {n:'Tea w/ sugar',k:['tea','chai'],c:60,p:1},
-  {n:'Coffee w/ sugar',k:['coffee','kaapi','filter coffee'],c:80,p:2}
+  {n:'Coffee w/ sugar',k:['coffee','kaapi','filter coffee'],c:80,p:2},
+  // restaurant / north-indian / compound dishes
+  {n:'Paneer butter masala',k:['paneer butter masala','paneer makhani','butter paneer','paneer masala'],c:350,p:14},
+  {n:'Butter chicken',k:['butter chicken','chicken makhani','murgh makhani'],c:330,p:22},
+  {n:'Chicken tikka',k:['chicken tikka','tikka','tandoori chicken'],c:220,p:28},
+  {n:'Naan',k:['naan','butter naan'],c:260,p:7},
+  {n:'Aloo / potato curry',k:['aloo','potato curry','aloo curry','potato fry'],c:180,p:3},
+  {n:'Channa / chole',k:['channa','chole','chana masala','rajma'],c:210,p:9},
+  {n:'Noodles',k:['noodles','maggi','hakka noodles','chow mein'],c:350,p:8},
+  {n:'Roll / kathi wrap',k:['kathi roll','egg roll','chicken roll','wrap','frankie'],c:330,p:12},
+  {n:'Sandwich',k:['sandwich'],c:300,p:10},
+  // fast food / junk
+  {n:'Paneer / veg burger',k:['paneer burger','veg burger','veggie burger','aloo tikki burger'],c:450,p:15},
+  {n:'Chicken burger',k:['chicken burger'],c:480,p:25},
+  {n:'Burger',k:['burger'],c:400,p:15},
+  {n:'French fries',k:['french fries','fries','finger chips'],c:320,p:4},
+  {n:'Pizza (2 slices)',k:['pizza'],c:570,p:24},
+  {n:'Chips / wafers',k:['chips','wafers','kurkure'],c:150,p:2},
+  {n:'Soft drink (glass)',k:['sweet soda','soft drink','soft-drink','sweet drink','cool drink','soda','cola','coke','pepsi','sprite','fanta'],c:140,p:0},
+  {n:'Packaged juice',k:['juice','frooti','maaza'],c:150,p:1},
+  {n:'Lassi (sweet)',k:['lassi'],c:180,p:6},
+  {n:'Milkshake',k:['milkshake','shake'],c:300,p:8},
+  // sweets / desserts
+  {n:'Ice cream',k:['ice cream','icecream'],c:200,p:3},
+  {n:'Gulab jamun (1)',k:['gulab jamun','jamun'],c:150,p:2},
+  {n:'Sweet / mithai',k:['mithai','laddu','ladoo','halwa','barfi','jalebi','sweet'],c:180,p:2},
+  {n:'Chocolate',k:['chocolate','candy bar'],c:230,p:3},
+  {n:'Cake (slice)',k:['cake','pastry'],c:350,p:4},
+  // tiffin extras
+  {n:'Idiyappam',k:['idiyappam','string hopper'],c:120,p:2},
+  {n:'Appam',k:['appam','aappam'],c:120,p:2},
+  {n:'Kichdi',k:['khichdi','kichdi'],c:250,p:8},
+  // fruit / salad
+  {n:'Apple',k:['apple'],c:95,p:0},
+  {n:'Orange',k:['orange','mosambi'],c:62,p:1},
+  {n:'Mango',k:['mango'],c:150,p:1},
+  {n:'Salad',k:['salad'],c:80,p:3}
 ];
+const UNIT_FACTOR={spoon:0.1,spoons:0.1,tbsp:0.1,tablespoon:0.1,tablespoons:0.1,tsp:0.04,teaspoon:0.04,teaspoons:0.04,
+  piece:1,pieces:1,pc:1,pcs:1,slice:1,slices:1,
+  plate:1.5,plates:1.5,glass:1,glasses:1,cup:1,cups:1,katori:1,bowl:1,bowls:1,handful:0.4,
+  small:0.6,large:1.4,big:1.4,full:1};
 const NUMW={half:0.5,a:1,an:1,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8};
 
 function buildStapleChips(){document.getElementById('stapleChips').innerHTML=STAPLES.map((s,i)=>
@@ -1027,21 +1067,56 @@ function estimateFood(){
   const phrases=txt.toLowerCase().split(/\s*[+,/]\s*|\s+and\s+/).map(s=>s.trim()).filter(Boolean);
   const items=[],unmatched=[];
   phrases.forEach(ph=>{
-    let best=null,bestLen=0;
-    FOOD_DB.forEach(f=>f.k.forEach(k=>{if(ph.includes(k)&&k.length>bestLen){best=f;bestLen=k.length;}}));
-    if(!best){unmatched.push(ph);return;}
-    let qty=1;const gm=ph.match(/(\d+(?:\.\d+)?)\s*(g|gram|grams)\b/);
-    if(best.g100&&gm)qty=parseFloat(gm[1])/100;
-    else{const nm=ph.match(/(\d+(?:\.\d+)?)/);
-      if(nm&&!gm)qty=parseFloat(nm[1]);
-      else for(const w in NUMW){if(new RegExp('\\b'+w+'\\b').test(ph)){qty=NUMW[w];break;}}}
-    if(isNaN(qty)||qty<=0)qty=1;
-    items.push({name:(qty!==1?(Number.isInteger(qty)?qty:qty.toFixed(1))+'× ':'')+best.n,kcal:best.c*qty,protein_g:best.p*qty});
+    const ms=matchPhrase(ph);
+    if(!ms.length){unmatched.push(ph);return;}
+    ms.forEach(m=>{
+      let factor,label;
+      if(m.grams!=null&&m.food.g100){factor=m.grams/100;label=m.grams+'g '+m.food.n;}
+      else{
+        const uf=(m.unit&&UNIT_FACTOR[m.unit]!=null)?UNIT_FACTOR[m.unit]:1;
+        factor=m.qty*uf;
+        if(m.unit&&!['full','small','large','big'].includes(m.unit))label=fmtNum(m.qty)+' '+m.unit+' '+m.food.n;
+        else if(m.qty!==1)label=fmtNum(m.qty)+'× '+m.food.n;
+        else label=m.food.n;
+      }
+      if(!(factor>0))factor=1;
+      items.push({name:label,kcal:m.food.c*factor,protein_g:m.food.p*factor});
+    });
   });
   document.getElementById('foodPreview').innerHTML='';
-  if(!items.length){hint.innerHTML='Couldn\'t match that — try simpler names ("rice", "sambar", "chicken"), tap a staple, or use the +/− buttons. Or ask me in chat and I\'ll give you the numbers.';return;}
+  if(!items.length){hint.innerHTML='Couldn\'t match that — try simpler names ("rice", "sambar", "chicken"), tap a staple, or use the +/− buttons.';return;}
   showFoodPreview({items,total_kcal:items.reduce((s,i)=>s+i.kcal,0),total_protein_g:items.reduce((s,i)=>s+i.protein_g,0),unmatched});
   hint.textContent='Estimated offline — check it, then add. Adjust portions in the text if needed.';
+}
+function fmtNum(n){return Number.isInteger(n)?String(n):n.toFixed(1);}
+function findKw(text,k){
+  const re=new RegExp('(^|[^a-z])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)');
+  const m=re.exec(text);return m?m.index+m[1].length:-1;
+}
+function matchPhrase(ph){
+  let scan=ph;const hits=[];
+  for(let g=0;g<8;g++){
+    let best=null,bestLen=0,bestIdx=-1;
+    for(const f of FOOD_DB){for(const k of f.k){const idx=findKw(scan,k);if(idx>=0&&k.length>bestLen){best=f;bestLen=k.length;bestIdx=idx;}}}
+    if(!best)break;
+    hits.push({food:best,idx:bestIdx,len:bestLen});
+    scan=scan.slice(0,bestIdx)+' '.repeat(bestLen)+scan.slice(bestIdx+bestLen);
+  }
+  hits.sort((a,b)=>a.idx-b.idx);
+  let prevEnd=0;const out=[];
+  hits.forEach(h=>{const ctx=ph.slice(prevEnd,h.idx);const qu=parseQtyUnit(ctx);out.push({food:h.food,qty:qu.qty,unit:qu.unit,grams:qu.grams});prevEnd=h.idx+h.len;});
+  return out;
+}
+function parseQtyUnit(ctx){
+  let qty=1,unit='',grams=null;
+  const g=ctx.match(/(\d+(?:\.\d+)?)\s*(g|gram|grams)\b/);
+  if(g)grams=parseFloat(g[1]);
+  const nums=ctx.replace(/(\d+(?:\.\d+)?)\s*(g|gram|grams)\b/g,'').match(/(\d+(?:\.\d+)?)/g);
+  if(nums)qty=parseFloat(nums[nums.length-1]);
+  else for(const w in NUMW){if(new RegExp('\\b'+w+'\\b').test(ctx)){qty=NUMW[w];break;}}
+  for(const u in UNIT_FACTOR){if(new RegExp('\\b'+u+'\\b').test(ctx)){unit=u;break;}}
+  if(isNaN(qty)||qty<=0)qty=1;
+  return {qty:qty,unit:unit,grams:grams};
 }
 function showFoodPreview(p){
   window._foodItems=p.items;
