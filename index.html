@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b13</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b14</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -294,6 +294,12 @@
 
     <!-- EAT & MOVE -->
     <div class="sec-label">Eat &amp; move · through the day</div>
+
+    <div class="card" id="mealCoachCard">
+      <div class="card-head"><div class="card-title"><span class="dot" style="background:var(--copper)"></span>What to cook today</div>
+        <button class="qbtn" onclick="talkMeals()" style="padding:5px 12px;font-size:12.5px;background:var(--copper-dim,rgba(217,139,74,.15));border-color:var(--copper)">🔊 Talk</button></div>
+      <div id="mealCoach"></div>
+    </div>
 
     <div class="card">
       <div class="card-head"><div class="card-title"><span class="dot" style="background:var(--teal)"></span>Log food</div>
@@ -473,6 +479,9 @@
       <div class="rule red">Avoid "fat burners" and high-dose green-tea-extract — liver-toxic.</div>
       <div class="note">Caution: paracetamol + alcohol is hard on the liver. Run the stack past a pharmacist.</div>
     </div>
+
+    <div class="sec-label">South Indian fat-loss kitchen — the week</div>
+    <div class="card" id="planSIMeals"></div>
 
     <div class="sec-label">Weekly training</div>
     <div class="card" id="planTrain"></div>
@@ -860,6 +869,7 @@ function bpCategory(s,d){
 }
 
 function renderToday(){
+  renderMealToday();
   renderFoodLog();
   document.getElementById('protVal').textContent=today.protein;
   document.getElementById('calVal').textContent=today.calories;
@@ -1448,6 +1458,67 @@ function makeAccordion(){
   const first=root.querySelector(':scope > .sec-toggle');
   if(first&&first.nextElementSibling){first.classList.add('open');first.nextElementSibling.classList.add('open');}
 }
+/* ---------- South Indian fat-loss meal plan (offline, rotates by weekday) ---------- */
+const WEEK_SHORT=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WEEK_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const MEALPLAN=[
+  { // Mon
+    b:{t:'2 pesarattu + coconut chutney',d:'Moong-dal dosa — high protein, low GI. Easy on the oil.'},
+    l:{t:'1 cup rice + sambar + cabbage poriyal + grilled chicken (or sprouts)',d:'Fill half the plate with veg, a quarter protein, a quarter rice. Curd on the side.'},
+    dn:{t:'3 idli + sambar + keerai',d:'Light, steamed, fibre-rich. No fried side tonight.'},
+    sn:{t:'Buttermilk + small handful peanuts',d:'Protein + good fat. Skip the sugar.'} },
+  { // Tue
+    b:{t:'3 idli + sambar + tomato chutney',d:'Steamed, filling. Go easy on coconut in the chutney.'},
+    l:{t:'1 cup rice + rasam + beans poriyal + fish curry (or dal)',d:'Rasam aids digestion; fish/dal for protein. Curd to finish.'},
+    dn:{t:'2 adai + avial',d:'Adai is lentil-loaded — keeps you full through the shift.'},
+    sn:{t:'1 katori sundal / green tea + makhana',d:'Channa or rajma sundal — protein + fibre.'} },
+  { // Wed
+    b:{t:'Oats + 2 boiled eggs (veg: oats + nuts + curd)',d:'Soluble fibre for the liver + lean protein.'},
+    l:{t:'Millet or 1 cup rice + mor kuzhambu + keerai poriyal + egg curry (or paneer)',d:'Swap rice for millet once or twice a week if you like.'},
+    dn:{t:'Veg soup + 2 low-oil dosa + chutney',d:'Soup first fills you up so dinner stays small.'},
+    sn:{t:'Tender coconut or a fruit',d:'Hydrating, light, no added sugar.'} },
+  { // Thu
+    b:{t:'2 dosa + sambar + chutney',d:'Spread thin, minimal oil. Sambar adds dal protein.'},
+    l:{t:'1 cup rice + kara kuzhambu + carrot-beans poriyal + chicken chukka (or sprouts)',d:'Dry chukka uses little oil. Load the poriyal.'},
+    dn:{t:'2 chapati or ragi mudde + dal tadka + salad',d:'Lower-carb dinner; ragi is a great night-shift slow-burn.'},
+    sn:{t:'Buttermilk + small handful almonds',d:'Calm the gut, steady protein.'} },
+  { // Fri
+    b:{t:'Small ven pongal (less ghee) + sambar',d:'Keep the portion modest and go light on ghee.'},
+    l:{t:'1 cup rice + rasam + cabbage poriyal + shallow-fried fish (or paneer)',d:'Shallow-fry, don\'t deep-fry. Curd on the side.'},
+    dn:{t:'2 idli + tomato chutney + greens',d:'Light close to the week.'},
+    sn:{t:'Green tea + roasted makhana',d:'Roasted, not fried. Crunchy and low-cal.'} },
+  { // Sat
+    b:{t:'2 idiyappam + light veg kurma (or egg bhurji + 1 dosa)',d:'String hoppers steam up light; keep kurma thin.'},
+    l:{t:'Controlled veg biryani (1 plate) + raita + salad',d:'Weekend treat — one plate, big salad, no seconds.'},
+    dn:{t:'Clear soup + grilled chicken or paneer tikka + salad',d:'Protein + veg, almost no carbs at night.'},
+    sn:{t:'A fruit or 1 katori sundal',d:'Keep it simple.'} },
+  { // Sun
+    b:{t:'3 idli or 2 dosa + sambar + chutney',d:'Relaxed start, still steamed not fried.'},
+    l:{t:'1 cup rice + lean chicken/mutton kuzhambu (less oil) + poriyal',d:'Sunday special — trim visible fat, skim the oil, one cup of rice.'},
+    dn:{t:'1 uttapam + chutney + buttermilk',d:'Light landing into the new week.'},
+    sn:{t:'Small handful nuts / buttermilk',d:'Protein-led snack.'} }
+];
+function mealDayIdx(){const d=new Date().getDay();return d===0?6:d-1;}
+function mealRow(label,o){return `<div class="meal"><div class="clk">${label}</div><div class="m"><b>${o.t}</b><span>${o.d}</span></div></div>`;}
+function renderMealToday(){
+  const el=document.getElementById('mealCoach');if(!el)return;
+  const i=mealDayIdx(),m=MEALPLAN[i];
+  let name='';try{const p=activeProfile();if(p&&p.name)name=p.name.split(' ')[0];}catch(e){}
+  el.innerHTML=`<div class="note" style="margin:0 0 10px;color:var(--text)">${name?'Hi '+name+' — ':''}here's ${WEEK_FULL[i]}'s fat-loss kitchen. Cook these; log your own portions.</div>`
+    +mealRow('Breakfast',m.b)+mealRow('Main meal',m.l)+mealRow('Dinner',m.dn)+mealRow('Snack',m.sn)
+    +`<div class="note">Veg swaps: chicken / fish / egg ↔ sprouts, paneer, dal, soya. Fill the plate with veg + protein first, keep rice to ~1 cup, skip fried items &amp; sugar. Tap 🔊 Talk to hear today's plan.</div>`;
+}
+function talkMeals(){
+  if(!('speechSynthesis' in window)){const f=document.getElementById('flash');if(f){f.textContent='Voice not supported here';f.classList.add('show');setTimeout(()=>{f.classList.remove('show');f.textContent='saved';},1600);}return;}
+  const i=mealDayIdx(),m=MEALPLAN[i];
+  let name='';try{const p=activeProfile();if(p&&p.name)name=p.name.split(' ')[0];}catch(e){}
+  const hr=new Date().getHours();const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  const txt=`${greet}${name?', '+name:''}. Here's today's kitchen for ${WEEK_FULL[i]}. `
+    +`For breakfast, make ${m.b.t}. The main meal is ${m.l.t}. `
+    +`For dinner, keep it light with ${m.dn.t}. If you snack, have ${m.sn.t}. `
+    +`Remember: fill the plate with vegetables and protein first, keep rice to about one cup, and skip the fried food and sugar today. You've got this.`;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.rate=0.98;speechSynthesis.speak(u);}catch(e){}
+}
 function buildPlan(){
   const sched=[['Mon','Strength A + Engine','Warm-up → Circuit A → treadmill Zone 2 18–20 min → cool-down'],
     ['Tue','Boxing + Core','Warm-up → 5–6 boxing rounds → Pilates core → easy treadmill → cool-down'],
@@ -1464,6 +1535,9 @@ function buildPlan(){
     ['~12–1 AM','If hungry','Protein only: yogurt, whey, paneer, chana · ~200 kcal · 20g']];
   document.getElementById('planMeals').innerHTML=meals.map(m=>`<div class="meal"><div class="clk">${m[0]}</div><div class="m"><b>${m[1]}</b><span>${m[2]}</span></div></div>`).join('')
     +`<div class="note">Stop eating ~2 hrs before sleep. A 10-min walk after each main meal.</div>`;
+  const sim=document.getElementById('planSIMeals');
+  if(sim)sim.innerHTML=MEALPLAN.map((m,i)=>`<div class="plan-day"><div class="d">${WEEK_SHORT[i]}</div><div class="t"><b>${m.b.t} · ${m.l.t}</b><span>Dinner: ${m.dn.t} · Snack: ${m.sn.t}</span></div></div>`).join('')
+    +`<div class="note">South Indian, protein-forward, ~1,500–1,700 kcal. Veg swaps: chicken / fish / egg ↔ sprouts, paneer, dal, soya. Minimal oil &amp; ghee, no sweets or sugary coffee, plenty of greens, sambar &amp; rasam for fibre, curd for protein. Night shift: breakfast = your wake meal, main = pre-shift, dinner = mid-shift, snack = only if hungry — stop eating ~2 h before sleep. Each profile logs its own portions; this is the household menu.</div>`;
 }
 
 /* ---------- insights: projection, scorecard, observations ---------- */
