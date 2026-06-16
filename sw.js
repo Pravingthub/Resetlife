@@ -1,5 +1,5 @@
 /* Reset 87 — service worker. Network-first for the page, cache-first for assets. */
-const CACHE = 'reset87-v20';
+const CACHE = 'reset87-v22';
 const ASSETS = [
   './','./index.html','./manifest.webmanifest',
   './icon-192.png','./icon-512.png','./icon-maskable-512.png','./apple-touch-icon.png'

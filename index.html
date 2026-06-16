@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b20</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b22</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -631,6 +631,8 @@
       </div>
       <div class="note" id="cloudNote">Enter the URL + anon key once per device. On the first phone, leave Sync code blank — it makes one. On the second phone, type that same Sync code, and every profile and all data appear automatically. Saved on-device only, never in the repo.</div>
       <div class="note" id="cloudSyncCode" style="margin-top:6px"></div>
+      <div class="note" id="cloudDiag" style="margin-top:8px"></div>
+      <div class="qbtns" id="cloudRepair" style="margin-top:8px;flex-wrap:wrap;gap:8px"></div>
       <div class="note" style="margin-top:6px">Security note: your data is only as private as your Supabase Row-Level-Security. Enable RLS on the <b>reset87_kv</b> table with a policy scoping rows by <b>vault</b>/<b>account</b>. Without RLS, anyone with the anon key can read all rows and the Sync code alone is security-by-obscurity.</div>
     </div>
   </section>
@@ -743,7 +745,14 @@ async function cloudSync(){
     if(error)return false;
     const m=_metaGet();const remote={};
     for(const row of (data||[])){const rt=new Date(row.updated_at).getTime();remote[row.k]=rt;
-      if(rt>(m[row.k]||0)){await _db.set(pfx()+row.k,JSON.stringify(row.value));m[row.k]=rt;changed=true;}}
+      if(row.k.indexOf('day:')===0){
+        let local=null;try{const lr=await _db.get(pfx()+row.k);local=lr?JSON.parse(lr.value):null;}catch(e){}
+        const merged=mergeDayObjects(local,row.value);const ms=JSON.stringify(merged);
+        if(!local||JSON.stringify(local)!==ms){await _db.set(pfx()+row.k,ms);changed=true;}
+        if(JSON.stringify(row.value)!==ms){const ts=Date.now();m[row.k]=ts;await cloudPush(row.k,merged,ts);remote[row.k]=ts;}
+        else{m[row.k]=Math.max(m[row.k]||0,rt);}
+      } else if(rt>(m[row.k]||0)){await _db.set(pfx()+row.k,JSON.stringify(row.value));m[row.k]=rt;changed=true;}
+    }
     const keys=await _db.list(pfx());const cut=pfx().length;
     for(const fk of keys){const k=fk.slice(cut);if(k==='_meta')continue;const lt=m[k]||0;
       if(lt>(remote[k]||0)){const r=await _db.get(fk);if(r){await cloudPush(k,JSON.parse(r.value),lt);}}}
@@ -836,7 +845,7 @@ const WALK_LABELS=['After Meal 1','After Meal 2','After Meal 3'];
 const SUPPS=[{k:'b',n:'B-complex / B1',s:'with Meal 1 · 12:30 PM'},{k:'omega',n:'Omega-3',s:'with Meal 1 · 12:30 PM'},{k:'psy',n:'Psyllium',s:'~8 PM · away from pills'},{k:'mag',n:'Magnesium',s:'pre-sleep · ~4 AM'}];
 
 function blank(){return{protein:0,calories:0,water:0,alcohol:0,training:'',trainMins:0,steps:0,
-  walks:[false,false,false],supps:{b:false,mag:false,psy:false,omega:false},foods:[],activities:[],
+  walks:[false,false,false],supps:{b:false,mag:false,psy:false,omega:false},foods:[],activities:[],_removed:[],
   weight:null,waist:null,bpSys:null,bpDia:null,rhr:null,sleep:null,craving:'',cravNote:''};}
 let today=blank(),key=logicalToday();
 
@@ -855,21 +864,43 @@ async function load(){
 }
 
 let flashT;
-/* Non-destructive merge: fill empty local fields from the cloud copy of the same day,
-   so a device that doesn't have (e.g.) today's food can't overwrite it with a blank. */
+/* ---------- day-record merge (additive, with delete tombstones) ---------- */
+function newFid(){return 'f'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function _sig(it){return it.id||((it.n||it.name||'')+'|'+(it.k!=null?it.k:it.kcal)+'|'+(it.p!=null?it.p:it.protein)+'|'+(it.mins||''));}
+function _mergeList(a,b,removed){
+  a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];
+  const out=[],seen={};
+  a.concat(b).forEach(it=>{const s=_sig(it);if(seen[s])return;seen[s]=1;out.push(it);});
+  if(removed&&removed.length){const rm={};removed.forEach(r=>rm[r]=1);return out.filter(it=>!rm[_sig(it)]);}
+  return out;
+}
+function _manual(rec,kind){const arr=rec.foods||[];const fc=arr.reduce((s,x)=>s+((kind==='k'?x.k:x.p)||0),0);return Math.max(0,((kind==='k'?rec.calories:rec.protein)||0)-fc);}
+function mergeDayObjects(local,remote){
+  if(!remote)return local;if(!local)return remote;
+  const m=Object.assign(blank(),local);
+  ['weight','waist','bpSys','bpDia','rhr','sleep'].forEach(f=>{if(m[f]==null&&remote[f]!=null)m[f]=remote[f];});
+  ['craving','cravNote'].forEach(f=>{if(!m[f]&&remote[f])m[f]=remote[f];});
+  ['water','alcohol','trainMins','steps'].forEach(f=>{m[f]=Math.max(local[f]||0,remote[f]||0);});
+  if(!m.training&&remote.training)m.training=remote.training;
+  const removed=[].concat(local._removed||[],remote._removed||[]);m._removed=removed;
+  m.foods=_mergeList(local.foods,remote.foods,removed);
+  m.activities=_mergeList(local.activities,remote.activities,removed);
+  if(Array.isArray(local.walks)&&Array.isArray(remote.walks))m.walks=local.walks.map((w,i)=>w||remote.walks[i]);
+  if(local.supps&&remote.supps){m.supps=Object.assign({},local.supps);Object.keys(remote.supps).forEach(s=>{m.supps[s]=local.supps[s]||remote.supps[s];});}
+  m.calories=m.foods.reduce((s,x)=>s+(x.k||0),0)+Math.max(_manual(local,'k'),_manual(remote,'k'));
+  m.protein =m.foods.reduce((s,x)=>s+(x.p||0),0)+Math.max(_manual(local,'p'),_manual(remote,'p'));
+  return m;
+}
+/* before saving, fold in the cloud copy so we never lose the other phone's entries */
 async function mergeRemoteDay(){
   if(!sb)return;let v;try{v=dataVault();}catch(e){return;}if(!v)return;
   try{
     const {data,error}=await sb.from('reset87_kv').select('value').eq('vault',v).eq('k','day:'+key).maybeSingle();
-    if(error||!data||!data.value)return;const r=data.value;
-    ['weight','waist','bpSys','bpDia','rhr','sleep'].forEach(f=>{if((today[f]===null||today[f]===undefined)&&r[f]!=null)today[f]=r[f];});
-    ['craving','cravNote'].forEach(f=>{if((!today[f])&&r[f])today[f]=r[f];});
-    ['protein','calories','water','alcohol','trainMins','steps'].forEach(f=>{if((!today[f])&&r[f])today[f]=r[f];});
-    if(!today.training&&r.training)today.training=r.training;
-    if((!today.foods||!today.foods.length)&&Array.isArray(r.foods)&&r.foods.length)today.foods=r.foods;
-    if((!today.activities||!today.activities.length)&&Array.isArray(r.activities)&&r.activities.length)today.activities=r.activities;
-    if(Array.isArray(r.walks)&&Array.isArray(today.walks))today.walks=today.walks.map((w,i)=>w||r.walks[i]);
-    if(r.supps&&today.supps)Object.keys(today.supps).forEach(s=>{if(!today.supps[s]&&r.supps[s])today.supps[s]=r.supps[s];});
+    if(error||!data||!data.value)return;
+    today=mergeDayObjects(today,data.value);
+    if(!Array.isArray(today.walks))today.walks=[false,false,false];
+    if(!today.supps)today.supps={b:false,mag:false,psy:false,omega:false};
+    if(!Array.isArray(today.foods))today.foods=[];
   }catch(e){}
 }
 async function save(flash=true){
@@ -1230,11 +1261,12 @@ function buildStapleChips(){document.getElementById('stapleChips').innerHTML=STA
   `<button class="chip" onclick="addStaple(${i})">${s[0]}</button>`).join('');}
 
 function pushFood(name,k,p){k=Math.round(k)||0;p=Math.round(p)||0;
-  today.foods.push({n:name,k:k,p:p});
+  today.foods.push({id:newFid(),n:name,k:k,p:p});
   today.calories=Math.max(0,today.calories+k);today.protein=Math.max(0,today.protein+p);}
 function addStaple(i){const s=STAPLES[i];pushFood(s[0],s[1],s[2]);renderToday();save();}
 function removeFood(i){const f=today.foods[i];if(!f)return;
   today.calories=Math.max(0,today.calories-f.k);today.protein=Math.max(0,today.protein-f.p);
+  today._removed=today._removed||[];today._removed.push(_sig(f));
   today.foods.splice(i,1);renderToday();save();}
 function renderFoodLog(){const el=document.getElementById('foodLog');if(!el)return;
   if(!today.foods||!today.foods.length){el.innerHTML='';return;}
@@ -1550,11 +1582,11 @@ async function addActivity(){
   const w=await latestWeight();
   const kcal=Math.round(act.met*w*(mins/60));   /* 1 MET \u2248 1 kcal per kg per hour */
   today.activities=today.activities||[];
-  today.activities.push({name:act.n,mins:mins,kcal:kcal,met:act.met});
+  today.activities.push({id:newFid(),name:act.n,mins:mins,kcal:kcal,met:act.met});
   mi.value='';renderActivities();save();
   if(typeof renderHero==='function')renderHero();
 }
-function removeActivity(i){(today.activities||[]).splice(i,1);renderActivities();save();if(typeof renderHero==='function')renderHero();}
+function removeActivity(i){const a=(today.activities||[])[i];if(a){today._removed=today._removed||[];today._removed.push(_sig(a));}(today.activities||[]).splice(i,1);renderActivities();save();if(typeof renderHero==='function')renderHero();}
 function activityBurn(){return (today.activities||[]).reduce((s,a)=>s+(a.kcal||0),0);}
 function renderActivities(){
   populateActivities();
@@ -1990,6 +2022,38 @@ function updateCloudUI(status){
   const st=document.getElementById('cloudStatus');if(st)st.textContent=status||(sb?'on':'off');
   const sc=document.getElementById('cloudSyncCode');
   if(sc)sc.innerHTML=(c&&c.account)?('Your <b>Sync code</b>: <b style="word-break:break-all">'+esc(c.account)+'</b><br>Enter this same code (plus the URL & key) on any other phone, and both profiles + all data appear automatically.'):'';
+  renderCloudDiag();
+}
+function renderCloudDiag(){
+  const el=document.getElementById('cloudDiag'),rep=document.getElementById('cloudRepair');if(!el)return;
+  const c=sbCfg();
+  if(!c||!c.url||!sb){el.innerHTML='';if(rep)rep.innerHTML='';return;}
+  const ps=getProfiles(),ap=activeProfile();
+  el.innerHTML='<b>Diagnostics</b><br>Sync code: <b style="word-break:break-all">'+esc(c.account||'—')+'</b><br>'
+    +'Active: <b>'+esc((ap&&ap.name)||'—')+'</b> · vault <code>'+esc(((ap&&ap.vault)||'—')).slice(0,14)+'…</code><br>'
+    +'Profiles here: '+ps.map(p=>esc(p.name)+' <code>'+esc(p.vault||'').slice(0,8)+'…</code>').join(' · ')
+    +'<br><span style="color:var(--warn)">For sync to work, the same name must show the SAME vault on both phones. If they differ, use the buttons below.</span>';
+  if(rep)rep.innerHTML='<button class="qbtn" onclick="forceSyncNow()">Force sync now</button>'
+    +'<button class="qbtn" onclick="pullProfilesNow()">Pull profiles from cloud</button>'
+    +'<button class="qbtn" onclick="pushProfilesNow()">Push my profiles to cloud</button>';
+}
+async function forceSyncNow(){
+  if(!sb)return;updateCloudUI('syncing…');
+  try{await cloudSync();await loadSettings();await load();refreshOpenViews();}catch(e){}
+  updateCloudUI('synced ✓');
+}
+async function pullProfilesNow(){
+  if(!sb)return;
+  if(!confirm("Replace THIS phone's profile list with the cloud copy?\n\nUse this on the phone that is MISSING data, to adopt the other phone's profiles and vaults."))return;
+  const ps=await pullRegistry();
+  if(ps&&ps.length&&!ps.find(p=>p.id===activeId()))setActiveId(ps[0].id);
+  await switchProfile(activeId());
+  renderProfiles();renderProfileList();updateCloudUI('synced ✓');
+}
+async function pushProfilesNow(){
+  if(!sb)return;
+  if(!confirm("Make THIS phone's profile list the cloud MASTER?\n\nUse this on the phone that HAS the correct data (e.g. the one showing the coffee). The other phone should then tap 'Pull profiles from cloud'."))return;
+  await pushRegistry();updateCloudUI('pushed ✓');
 }
 async function cloudConnect(){
   /* SECURITY: data isolation depends on Supabase Row-Level Security on reset87_kv,
@@ -2040,6 +2104,14 @@ function show(v){['today','trend','insights','plan'].forEach(x=>document.getElem
   await loadSettings();await load();
   if(sb){const ch=await cloudSync();if(ch){await loadSettings();await load();}refreshOpenViews();updateCloudUI('synced ✓');}
 })();
+
+/* Auto-sync when the app comes back to the foreground, so new data from another phone appears without a manual reload. */
+let _lastFocusSync=0;
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState!=='visible'||!sb)return;
+  if(Date.now()-_lastFocusSync<4000)return;_lastFocusSync=Date.now();
+  try{const ch=await cloudSync();if(ch){await loadSettings();await load();refreshOpenViews();}updateCloudUI('synced ✓');}catch(e){}
+});
 
 /* ---------- PWA: register service worker (silent if unavailable, e.g. in-app preview) ---------- */
 if('serviceWorker' in navigator){
