@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b22</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b23</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -904,6 +904,8 @@ async function mergeRemoteDay(){
   }catch(e){}
 }
 async function save(flash=true){
+  try{await sset('day:'+key,today);}catch(e){}     /* persist locally + queue cloud push — this is what a refresh reads */
+  try{await mergeRemoteDay();await sset('day:'+key,today);}catch(e){}  /* fold in any cloud copy, then re-save merged (best-effort) */
   if(flash){const f=document.getElementById('flash');f.classList.add('show');
     clearTimeout(flashT);flashT=setTimeout(()=>f.classList.remove('show'),900);}
 }
