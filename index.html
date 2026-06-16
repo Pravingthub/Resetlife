@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b19</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b20</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -301,7 +301,7 @@
         <button class="qbtn" onclick="addActivity()">Add</button>
       </div>
       <div id="activityList"></div>
-      <div class="note">Log what you actually did — partial sessions, swaps, anything. Calories burned are estimated from your latest weight. Use "Other" for activities not listed.</div>
+      <div class="note">Log what you actually did — partial sessions, swaps, anything. Calories are estimated from your latest weight; tap the kcal number to overwrite it with your strap's reading. Use "Other" for activities not listed.</div>
     </div>
 
     <!-- EAT & MOVE -->
@@ -855,8 +855,24 @@ async function load(){
 }
 
 let flashT;
+/* Non-destructive merge: fill empty local fields from the cloud copy of the same day,
+   so a device that doesn't have (e.g.) today's food can't overwrite it with a blank. */
+async function mergeRemoteDay(){
+  if(!sb)return;let v;try{v=dataVault();}catch(e){return;}if(!v)return;
+  try{
+    const {data,error}=await sb.from('reset87_kv').select('value').eq('vault',v).eq('k','day:'+key).maybeSingle();
+    if(error||!data||!data.value)return;const r=data.value;
+    ['weight','waist','bpSys','bpDia','rhr','sleep'].forEach(f=>{if((today[f]===null||today[f]===undefined)&&r[f]!=null)today[f]=r[f];});
+    ['craving','cravNote'].forEach(f=>{if((!today[f])&&r[f])today[f]=r[f];});
+    ['protein','calories','water','alcohol','trainMins','steps'].forEach(f=>{if((!today[f])&&r[f])today[f]=r[f];});
+    if(!today.training&&r.training)today.training=r.training;
+    if((!today.foods||!today.foods.length)&&Array.isArray(r.foods)&&r.foods.length)today.foods=r.foods;
+    if((!today.activities||!today.activities.length)&&Array.isArray(r.activities)&&r.activities.length)today.activities=r.activities;
+    if(Array.isArray(r.walks)&&Array.isArray(today.walks))today.walks=today.walks.map((w,i)=>w||r.walks[i]);
+    if(r.supps&&today.supps)Object.keys(today.supps).forEach(s=>{if(!today.supps[s]&&r.supps[s])today.supps[s]=r.supps[s];});
+  }catch(e){}
+}
 async function save(flash=true){
-  await sset('day:'+key,today);
   if(flash){const f=document.getElementById('flash');f.classList.add('show');
     clearTimeout(flashT);flashT=setTimeout(()=>f.classList.remove('show'),900);}
 }
@@ -1546,9 +1562,10 @@ function renderActivities(){
   const acts=today.activities||[],burn=activityBurn();
   const bl=document.getElementById('burnLbl');if(bl){bl.style.color='';bl.textContent=burn?('~'+burn+' kcal burned'):'';}
   list.innerHTML=acts.length
-    ? acts.map((a,i)=>`<div class="meal"><div class="clk">${a.mins}m</div><div class="m"><b>${a.name}</b><span>~${a.kcal} kcal</span></div><button class="fx" onclick="removeActivity(${i})" aria-label="Remove ${a.name}">\u00d7</button></div>`).join('')
+    ? acts.map((a,i)=>`<div class="meal"><div class="clk">${a.mins}m</div><div class="m"><b>${a.name}</b><span><input class="inline-input sm" type="number" inputmode="numeric" value="${a.kcal}" onchange="setActKcal(${i},this.value)" style="width:62px" aria-label="Calories for ${a.name}"> kcal</span></div><button class="fx" onclick="removeActivity(${i})" aria-label="Remove ${a.name}">\u00d7</button></div>`).join('')
     : '<div class="note" style="margin:0 0 4px">No activity logged yet today.</div>';
 }
+function setActKcal(i,v){const n=Math.max(0,parseInt(v,10)||0);if(today.activities&&today.activities[i]){today.activities[i].kcal=n;renderActivities();save();if(typeof renderHero==='function')renderHero();}}
 function mealDayIdx(){const d=new Date().getDay();return d===0?6:d-1;}
 function mealRow(label,title){return `<div class="meal"><div class="clk">${label}</div><div class="m"><b>${title}</b></div></div>`;}
 function subLabel(t){return `<div style="font-family:var(--display);font-weight:600;font-size:13px;color:var(--copper);margin:15px 0 7px">${t}</div>`;}
