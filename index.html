@@ -199,7 +199,7 @@
 
   <!-- ===================== TODAY ===================== -->
   <section id="view-today">
-    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b18</span></div>
+    <div class="eyebrow" style="padding:22px 2px 8px">Reset 87 · <span id="dateLabel"></span> · <span style="color:var(--faint)">b19</span></div>
     <div id="profileBar" class="chips" style="padding:0 2px 12px;display:none"></div>
     <div class="card hero-card">
       <div class="hero">
@@ -290,6 +290,18 @@
       <div class="note" id="trainSuggest" style="margin:0 0 10px"></div>
       <div class="chips" id="trainChips"></div>
       <div id="trainDetail"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot" style="background:var(--green)"></span>Activity log</div>
+        <div class="card-val" id="burnLbl"></div></div>
+      <div class="qbtns" style="margin:0 0 8px;flex-wrap:wrap;gap:8px">
+        <select id="actSel" class="inline-input" style="flex:1;min-width:150px"></select>
+        <input id="actMins" class="inline-input sm" type="number" inputmode="numeric" placeholder="min" aria-label="Minutes">
+        <button class="qbtn" onclick="addActivity()">Add</button>
+      </div>
+      <div id="activityList"></div>
+      <div class="note">Log what you actually did — partial sessions, swaps, anything. Calories burned are estimated from your latest weight. Use "Other" for activities not listed.</div>
     </div>
 
     <!-- EAT & MOVE -->
@@ -824,7 +836,7 @@ const WALK_LABELS=['After Meal 1','After Meal 2','After Meal 3'];
 const SUPPS=[{k:'b',n:'B-complex / B1',s:'with Meal 1 · 12:30 PM'},{k:'omega',n:'Omega-3',s:'with Meal 1 · 12:30 PM'},{k:'psy',n:'Psyllium',s:'~8 PM · away from pills'},{k:'mag',n:'Magnesium',s:'pre-sleep · ~4 AM'}];
 
 function blank(){return{protein:0,calories:0,water:0,alcohol:0,training:'',trainMins:0,steps:0,
-  walks:[false,false,false],supps:{b:false,mag:false,psy:false,omega:false},foods:[],
+  walks:[false,false,false],supps:{b:false,mag:false,psy:false,omega:false},foods:[],activities:[],
   weight:null,waist:null,bpSys:null,bpDia:null,rhr:null,sleep:null,craving:'',cravNote:''};}
 let today=blank(),key=logicalToday();
 
@@ -870,6 +882,7 @@ function bpCategory(s,d){
 
 function renderToday(){
   renderMealToday();
+  renderActivities();
   renderFoodLog();
   document.getElementById('protVal').textContent=today.protein;
   document.getElementById('calVal').textContent=today.calories;
@@ -1492,6 +1505,49 @@ function proteinPortion(name){
   if(n.indexOf('pravin')>=0) return '150\u2013200 g tofu/paneer, or 1 bowl rajma/channa/soy. Vegetables unlimited.';
   if(n.indexOf('kutty')>=0)  return '100\u2013150 g tofu/paneer, or \u00be bowl rajma/channa/soy. Vegetables unlimited.';
   return 'A normal family serving of protein; vegetables unlimited.';
+}
+/* ---------- activity logger (MET-based calorie burn) ---------- */
+const ACTIVITIES=[
+  {n:'Walking — easy',met:3.3},{n:'Walking — brisk',met:4.3},{n:'Treadmill incline (Zone 2)',met:5.5},
+  {n:'Running',met:8.3},{n:'Cycling',met:6.8},{n:'Table tennis',met:4.0},
+  {n:'Boxing — bag/pads',met:6.5},{n:'Boxing — sparring',met:9.0},{n:'Strength / weights',met:5.0},
+  {n:'Bodyweight circuit',met:4.5},{n:'Bodyweight — partial/light',met:3.5},{n:'HIIT',met:8.0},
+  {n:'Yoga',met:2.8},{n:'Pilates',met:3.0},{n:'Stretching / mobility',met:2.3},
+  {n:'Skipping (jump rope)',met:11.0},{n:'Badminton',met:5.5},{n:'Swimming',met:7.0},
+  {n:'Cricket',met:5.0},{n:'Stairs climbing',met:8.0},{n:'Household / cleaning',met:3.3},
+  {n:'Other — light',met:3.0},{n:'Other — moderate',met:5.0},{n:'Other — intense',met:8.0}
+];
+function populateActivities(){
+  const sel=document.getElementById('actSel');if(!sel||sel.options.length)return;
+  sel.innerHTML=ACTIVITIES.map((a,i)=>`<option value="${i}">${a.n}</option>`).join('');
+}
+async function latestWeight(){
+  if(today.weight)return today.weight;
+  try{const days=(await loadDays()).filter(d=>d.weight).sort((a,b)=>a.date<b.date?1:-1);if(days.length)return days[0].weight;}catch(e){}
+  return 87;
+}
+async function addActivity(){
+  const sel=document.getElementById('actSel'),mi=document.getElementById('actMins');
+  const mins=parseInt(mi.value,10);const bl=document.getElementById('burnLbl');
+  if(!mins||mins<=0||mins>600){if(bl){bl.textContent='enter minutes (1\u2013600)';bl.style.color='var(--red)';setTimeout(()=>{bl.style.color='';renderActivities();},1800);}return;}
+  const act=ACTIVITIES[parseInt(sel.value,10)||0];
+  const w=await latestWeight();
+  const kcal=Math.round(act.met*w*(mins/60));   /* 1 MET \u2248 1 kcal per kg per hour */
+  today.activities=today.activities||[];
+  today.activities.push({name:act.n,mins:mins,kcal:kcal,met:act.met});
+  mi.value='';renderActivities();save();
+  if(typeof renderHero==='function')renderHero();
+}
+function removeActivity(i){(today.activities||[]).splice(i,1);renderActivities();save();if(typeof renderHero==='function')renderHero();}
+function activityBurn(){return (today.activities||[]).reduce((s,a)=>s+(a.kcal||0),0);}
+function renderActivities(){
+  populateActivities();
+  const list=document.getElementById('activityList');if(!list)return;
+  const acts=today.activities||[],burn=activityBurn();
+  const bl=document.getElementById('burnLbl');if(bl){bl.style.color='';bl.textContent=burn?('~'+burn+' kcal burned'):'';}
+  list.innerHTML=acts.length
+    ? acts.map((a,i)=>`<div class="meal"><div class="clk">${a.mins}m</div><div class="m"><b>${a.name}</b><span>~${a.kcal} kcal</span></div><button class="fx" onclick="removeActivity(${i})" aria-label="Remove ${a.name}">\u00d7</button></div>`).join('')
+    : '<div class="note" style="margin:0 0 4px">No activity logged yet today.</div>';
 }
 function mealDayIdx(){const d=new Date().getDay();return d===0?6:d-1;}
 function mealRow(label,title){return `<div class="meal"><div class="clk">${label}</div><div class="m"><b>${title}</b></div></div>`;}
